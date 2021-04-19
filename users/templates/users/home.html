@@ -1,0 +1,176 @@
+{% extends "users/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>home</h1>
+    <form method="POST" id="peer_id_updateform"enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">peer Update</legend>
+            {{ u_form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" id='peer_update_btn' type="submit">Sign Up</button>
+        </div>
+    </form>
+    <div>
+      <h1>{{ curr_user }}</h1>
+    </div>
+    <div id="canvas"></div>
+    <video id='myvideo' width="320" height="240" autoplay muted></video>
+    <!-- <input type="text" name="" id="myid"> -->
+    <!-- <button onclick="connect();">connect</button> -->
+    
+    <div>
+      {% for i in users %}
+          {% if i.user.username != curr_user %}
+            <button onclick="create_room('{{ i.peer_id }}','{{ i.user.username }}')">{{ i.user.username }}</button>
+          {% endif %}
+      {% endfor %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+      <!-- The core Firebase JS SDK is always required and must be listed first -->
+      <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+
+      <!-- TODO: Add SDKs for Firebase products that you want to use
+          https://firebase.google.com/docs/web/setup#available-libraries -->
+      <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-analytics.js"></script>
+  
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-firestore.js"></script>
+    <!--end-->
+      <script>
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      var firebaseConfig = {
+          apiKey: "AIzaSyDcEdb_lBOs9m-XEP9W7zv9PIorCupBu5s",
+          authDomain: "simple-91dd0.firebaseapp.com",
+          projectId: "simple-91dd0",
+          storageBucket: "simple-91dd0.appspot.com",
+          messagingSenderId: "260826023789",
+          appId: "1:260826023789:web:7c82f5c42aac10a059fc64",
+          measurementId: "G-WCWNLD08KZ"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+      </script>
+    <script type="text/javascript">
+      var peer = new Peer();
+      var myid;
+      peer.on('open', function(id) {
+        /*console.log('My peer ID is: ' + id);*/
+        myid = id;
+        firebase.database().ref('users/{{ curr_user }}/peer_id').set({
+          peer_id:myid,
+        })
+        document.getElementById('id_peer_id').value = id;
+        document.getElementById('peer_update_btn').click();
+      });
+
+
+
+      function create_room(uid,uname){
+        firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
+          if(snapshot.val()!=null){
+            console.log('if is running')
+            firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
+              member:'1',
+            })
+            firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
+              member:'1',
+            })
+            firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
+            firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
+              childsnapshot.forEach((element)=>{
+                console.log(element.key, element.key!='{{ curr_user }}')
+                if(element.key!='{{ curr_user }}'){
+                  firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+                  console.log(element.key,"\'s id:",getting_members_id.val().peer_id);
+                  connect(getting_members_id.val().peer_id);
+                })
+                }
+              })
+            })
+          }else{
+            console.log('else is running')
+            firebase.database().ref('room_number/').get().then((snapshot)=>{
+                console.log(snapshot.val().room_number)
+                var new_room_number = eval(snapshot.val().room_number)+1;
+                console.log(new_room_number)
+                firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
+                firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
+                firebase.database().ref('room_number/').update({room_number:new_room_number,});
+                create_room(uid,uname);
+            })
+            
+          }
+        })
+      }
+      function connect(anotherpeersid){
+        var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        getUserMedia({video: true, audio: true}, function(stream) {
+          var call = peer.call(anotherpeersid, stream);
+          call.once('stream', function(remoteStream) {
+            var canvas = document.getElementById('canvas');
+            var video_element = document.createElement('video');
+            video_element.setAttribute('height','480');
+            video_element.setAttribute('width','640');
+            video_element.autoplay = true;
+            video_element.srcObject = remoteStream;
+            canvas.append(video_element);
+            document.getElementById('myvideo').srcObject = stream;
+              
+          });
+        }, function(err) {
+          console.log('Failed to get local stream' ,err);
+        });
+    }
+      peer.on('connection', function(conn) {
+        conn.on('data', function(data){
+          // Will print 'hi!'
+          console.log(data);
+        });
+      });
+
+      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      peer.on('call', function(call) {
+        getUserMedia({video: true, audio: true}, function(stream) {
+          call.answer(stream); // Answer the call with an A/V stream.
+          call.once('stream', function(remoteStream) {
+            var canvas = document.getElementById('canvas');
+            var video_element = document.createElement('video');
+            video_element.setAttribute('height','480');
+            video_element.setAttribute('width','640');
+            video_element.autoplay = true;
+            video_element.srcObject = remoteStream;
+            canvas.append(video_element);
+            document.getElementById('myvideo').srcObject = stream;
+
+          });
+        }, function(err) {
+          console.log('Failed to get local stream' ,err);
+        });
+      });
+      $(document).on('submit','#peer_id_updateform',function(e){
+        e.preventDefault();
+        var token = "{{csrf_token}}";
+        $.ajax({
+          type: "POST",
+          headers: { "X-CSRFToken": token },
+          url: "{% url 'home' %}",
+          data: {'peer_id':document.getElementById('id_peer_id').value},
+
+          success: function (data) {
+            /*console.log(data);*/
+          },
+          error: function (data) {},
+        });
+      })
+    </script>
+  
+
+{% endblock content %}
