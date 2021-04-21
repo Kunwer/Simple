@@ -21,7 +21,7 @@
     <!-- <input type="text" name="" id="myid"> -->
     <!-- <button onclick="connect();">connect</button> -->
     
-    <div>
+    <div id="users_btn">
       {% for i in users %}
           {% if i.user.username != curr_user %}
             <button onclick="create_room('{{ i.peer_id }}','{{ i.user.username }}')">{{ i.user.username }}</button>
@@ -61,19 +61,23 @@
     <script type="text/javascript">
       var peer = new Peer();
       var myid;
+      var room_member_list=[];
       peer.on('open', function(id) {
         /*console.log('My peer ID is: ' + id);*/
         myid = id;
         firebase.database().ref('users/{{ curr_user }}/peer_id').set({
           peer_id:myid,
         })
+        room_member_list.push(myid);
         document.getElementById('id_peer_id').value = id;
         document.getElementById('peer_update_btn').click();
       });
-
-
+      function hide_btns(){
+        document.getElementById('users_btn').style.display = 'none';
+      }
 
       function create_room(uid,uname){
+        hide_btns();
         firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
           if(snapshot.val()!=null){
             console.log('if is running')
@@ -90,7 +94,11 @@
                 if(element.key!='{{ curr_user }}'){
                   firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
                   console.log(element.key,"\'s id:",getting_members_id.val().peer_id);
-                  connect(getting_members_id.val().peer_id);
+                  //if(!room_member_list.includes(getting_members_id.val().peer_id)){
+                    connect(getting_members_id.val().peer_id);
+                    room_member_list.push(getting_members_id.val().peer_id)
+                    console.log(room_member_list);
+                  //}
                 })
                 }
               })
@@ -112,6 +120,15 @@
       }
       function connect(anotherpeersid){
         var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        var conn = peer.connect(anotherpeersid);
+          // on open will be launch when you successfully connect to PeerServer
+        conn.on('open', function(){
+          // here you have conn.id
+            conn.send(myid);
+            console.log(myid);
+
+        })
+
         getUserMedia({video: true, audio: true}, function(stream) {
           var call = peer.call(anotherpeersid, stream);
           call.once('stream', function(remoteStream) {
@@ -129,28 +146,40 @@
           console.log('Failed to get local stream' ,err);
         });
     }
+      
+
+      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      var data_received;
       peer.on('connection', function(conn) {
         conn.on('data', function(data){
           // Will print 'hi!'
-          console.log(data);
+          console.log("received-------------",data);
+          data_received =data;
+
         });
       });
-
-      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
       peer.on('call', function(call) {
+        hide_btns();
         getUserMedia({video: true, audio: true}, function(stream) {
-          call.answer(stream); // Answer the call with an A/V stream.
-          call.once('stream', function(remoteStream) {
-            var canvas = document.getElementById('canvas');
-            var video_element = document.createElement('video');
-            video_element.setAttribute('height','480');
-            video_element.setAttribute('width','640');
-            video_element.autoplay = true;
-            video_element.srcObject = remoteStream;
-            canvas.append(video_element);
-            document.getElementById('myvideo').srcObject = stream;
 
-          });
+          
+          if(!room_member_list.includes(data_received)){
+            call.answer(stream); // Answer the call with an A/V stream.
+            call.once('stream', function(remoteStream) {
+              var canvas = document.getElementById('canvas');
+              var video_element = document.createElement('video');
+              video_element.setAttribute('height','480');
+              video_element.setAttribute('width','640');
+              video_element.autoplay = true;
+              video_element.srcObject = remoteStream;
+              canvas.append(video_element);
+              document.getElementById('myvideo').srcObject = stream;
+              room_member_list.push(data_received);
+              console.log(room_member_list) 
+
+            });
+            
+          }
         }, function(err) {
           console.log('Failed to get local stream' ,err);
         });
