@@ -92,7 +92,7 @@
 					console.log(element.key, element.key!='{{ curr_user }}')
 					if(element.key!='{{ curr_user }}'){
 					firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
-						connect(getting_members_id.val().peer_id,uname);
+						connect(getting_members_id.val().peer_id,element.key);
 					})
 					}
 				})
