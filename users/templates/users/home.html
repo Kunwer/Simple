@@ -14,229 +14,215 @@
         </div>
     </form>
     <div>
-      <h1>{{ curr_user }}</h1>
+        <h1>{{ curr_user }}</h1>
     </div>
+	<div id="call_ended" class="h1" style='display:none;'>Call Ended</div>
     <div id="canvas"></div>
     <video id='myvideo' width="320" height="240" autoplay muted></video>
-    <!-- <input type="text" name="" id="myid"> -->
-    <!-- <button onclick="connect();">connect</button> -->
     <div id="leave" class="btn btn-danger btn-sm" onclick="leave();" style="display: none;">Leave</div>
     <div id="users_btn">
       {% for i in users %}
-          {% if i.user.username != curr_user %}
-            <button onclick="create_room('{{ i.peer_id }}','{{ i.user.username }}')">{{ i.user.username }}</button>
-          {% endif %}
+            {% if i.user.username != curr_user %}
+            	<button onclick="create_room('{{ i.peer_id }}','{{ i.user.username }}')" value= '{{ i.peer_id }}'>{{ i.user.username }}</button>
+          	{% endif %}
       {% endfor %}
     </div>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
-      <!-- The core Firebase JS SDK is always required and must be listed first -->
-      <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
 
-      <!-- TODO: Add SDKs for Firebase products that you want to use
-          https://firebase.google.com/docs/web/setup#available-libraries -->
-      <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-analytics.js"></script>
-  
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+		https://firebase.google.com/docs/web/setup#available-libraries -->
+	<script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-analytics.js"></script>
+
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-firestore.js"></script>
     <!--end-->
-      <script>
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      var firebaseConfig = {
-          apiKey: "AIzaSyDcEdb_lBOs9m-XEP9W7zv9PIorCupBu5s",
-          authDomain: "simple-91dd0.firebaseapp.com",
-          projectId: "simple-91dd0",
-          storageBucket: "simple-91dd0.appspot.com",
-          messagingSenderId: "260826023789",
-          appId: "1:260826023789:web:7c82f5c42aac10a059fc64",
-          measurementId: "G-WCWNLD08KZ"
-      };
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      firebase.analytics();
-      </script>
-    <script type="text/javascript">
-      var peer = new Peer();
-      var myid;
-      var room_member_list=[];
-      peer.on('open', function(id) {
-        /*console.log('My peer ID is: ' + id);*/
-        myid = id;
-        firebase.database().ref('users/{{ curr_user }}/peer_id').set({
-          peer_id:myid,
-        })
-        room_member_list.push(myid);
-        document.getElementById('id_peer_id').value = id;
-        document.getElementById('peer_update_btn').click();
-      });
-      function hide_btns(){
-        document.getElementById('users_btn').style.display = 'none';
-      }
-      function show_leave_btn(){
-        document.getElementById('leave').style.display = 'block';
-      }
-      function create_room(uid,uname){
-        hide_btns();
-        firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
-          if(snapshot.val()!=null){
-            console.log('if is running')
-            firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
-              member:'1',
-            })
-            firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
-              member:'1',
-            })
-            firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
-            firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
-              childsnapshot.forEach((element)=>{
-                console.log(element.key, element.key!='{{ curr_user }}')
-                if(element.key!='{{ curr_user }}'){
-                  firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
-                  console.log(element.key,"\'s id:",getting_members_id.val().peer_id);
-                  //if(!room_member_list.includes(getting_members_id.val().peer_id)){
-                    connect(getting_members_id.val().peer_id);
-                    room_member_list.push(getting_members_id.val().peer_id)
-                    console.log(room_member_list);
-                  //}
-                })
-                }
-              })
-            })
-          }else{
-            console.log('else is running')
-            firebase.database().ref('room_number/').get().then((snapshot)=>{
-                console.log(snapshot.val().room_number)
-                var new_room_number = eval(snapshot.val().room_number)+1;
-                console.log(new_room_number)
-                firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
-                firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
-                firebase.database().ref('room_number/').update({room_number:new_room_number,});
-                create_room(uid,uname);
-            })
-            
-          }
-        })
-      }
-      sendvideocall = (anotherpeersid)=>{
-        getUserMedia({video: true, audio: true}, function(stream) {
-          var call = peer.call(anotherpeersid, stream);
-          call.once('stream', function(remoteStream) {
-            var canvas = document.getElementById('canvas');
-            var video_element = document.createElement('video');
-            video_element.setAttribute('height','480');
-            video_element.setAttribute('width','640');
-            video_element.setAttribute('id',anotherpeersid)
-            video_element.autoplay = true;
-            video_element.srcObject = remoteStream;
-            canvas.append(video_element);
-            document.getElementById('myvideo').srcObject = stream;
-            show_leave_btn();
-              
-          })
-        }, function(err) {
-          console.log('Failed to get local stream' ,err);
-        });
-      }
+	<script>
+		// Your web app's Firebase configuration
+		// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+		var firebaseConfig = {
+			apiKey: "AIzaSyDcEdb_lBOs9m-XEP9W7zv9PIorCupBu5s",
+			authDomain: "simple-91dd0.firebaseapp.com",
+			projectId: "simple-91dd0",
+			storageBucket: "simple-91dd0.appspot.com",
+			messagingSenderId: "260826023789",
+			appId: "1:260826023789:web:7c82f5c42aac10a059fc64",
+			measurementId: "G-WCWNLD08KZ"
+		};
+		// Initialize Firebase
+		firebase.initializeApp(firebaseConfig);
+		firebase.analytics();
+	</script>
+    <script type="text/javascript" defer>
+		var peer = new Peer();
+		var myid;
+		var room_member_list=[];
+		peer.on('open', function(id) {
+			myid = id;
+			firebase.database().ref('users/{{ curr_user }}/peer_id').set({
+			peer_id:myid,
+			})
+			document.getElementById('id_peer_id').value = id;
+			document.getElementById('peer_update_btn').click();
+		});
+		function hide_btns(){
+			document.getElementById('users_btn').style.display = 'none';
+		}
+		function show_leave_btn(){
+			document.getElementById('leave').style.display = 'block';
+		}
+		function create_room(uid,uname){
+			hide_btns();
+			uid = this.value;
+			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
+			if(snapshot.val()!=null){
+				firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
+				member:'1',
+				})
+				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
+				member:'1',
+				})
+				firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
+				firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
+				childsnapshot.forEach((element)=>{
+					console.log(element.key, element.key!='{{ curr_user }}')
+					if(element.key!='{{ curr_user }}'){
+					firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+						connect(getting_members_id.val().peer_id,uname);
+					})
+					}
+				})
+				})
+			}else{
+				firebase.database().ref('room_number/').get().then((snapshot)=>{
+					console.log(snapshot.val().room_number)
+					var new_room_number = eval(snapshot.val().room_number)+1;
+					console.log(new_room_number)
+					firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
+					firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
+					firebase.database().ref('room_number/').update({room_number:new_room_number,});
+					create_room(uid,uname);
+				})
+				
+			}
+			})
+		}
+		sendvideocall = (anotherpeersid,uname)=>{
+			getUserMedia({video: true, audio: true,}, function(stream) {
+			var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
+			call.once('stream', function(remoteStream) {
+				if(!room_member_list.includes(remoteStream.id)){
+					console.log(remoteStream.id,'send vala')
+					room_member_list.push(remoteStream.id)
+					var canvas = document.getElementById('canvas');
+					var video_element = document.createElement('video');
+					//video_element.setAttribute('height','480');
+					//video_element.setAttribute('width','640');
+					video_element.setAttribute('id',uname)
+					video_element.autoplay = true;
+					video_element.srcObject = remoteStream;
+					canvas.append(video_element);
+					document.getElementById('myvideo').srcObject = stream;
+					show_leave_btn();
+				}
+			})
+			}, function(err) {
+			console.log('Failed to get local stream' ,err);
+			});
+		}
 
-      function connect(anotherpeersid){
-        var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-        var conn = peer.connect(anotherpeersid);
-          // on open will be launch when you successfully connect to PeerServer
-        conn.on('open', function(){
-          // here you have conn.id
-            conn.send(myid);
-            console.log(myid);
-            sendvideocall(anotherpeersid);
-        })
-        
-        
-    }
-      var data_received;
-    
-      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-      peer.on('connection', function(conn) {
-        conn.on('data', function(data){
-          // Will print 'hi!'
-          console.log("received-------------",data);
-          data_received =data;
+		function connect(anotherpeersid,uname){
+			var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+			var conn = peer.connect(anotherpeersid);
+			// on open will be launch when you successfully connect to PeerServer
+			sendvideocall(anotherpeersid,uname);
+		}
+		
+		var data_received;
+		
+		var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+		//todo Later: 
+		peer.on('call', function(call) {
+			hide_btns();
+			getUserMedia({video: true, audio: true}, function(stream) {
+				data_received = call.metadata.userName;
+				call.answer(stream); // Answer the call with an A/V stream.
+				call.once('stream', function(remoteStream) {
+					if(!room_member_list.includes(remoteStream.id)){
+						room_member_list.push(remoteStream.id)
+						console.log(remoteStream.id,'receive vala')
+						var canvas = document.getElementById('canvas');
+						var video_element = document.createElement('video');
+						video_element.setAttribute('height','480');
+						video_element.setAttribute('width','640');
+						video_element.setAttribute('id',data_received);
+						video_element.autoplay = true;
+						video_element.srcObject = remoteStream;
+						canvas.append(video_element);
+						document.getElementById('myvideo').srcObject = stream;
+						console.log(room_member_list) 
+						show_leave_btn()
+					}
+					})
+				//}
+			}, function(err) {
+				console.log('Failed to get local stream' ,err);
+			});
+		});
+		
+		$(document).on('submit','#peer_id_updateform',function(e){
+			e.preventDefault();
+			var token = "{{csrf_token}}";
+			$.ajax({
+			type: "POST",
+			headers: { "X-CSRFToken": token },
+			url: "{% url 'home' %}",
+			data: {'peer_id':document.getElementById('id_peer_id').value},
 
-        });
-      });
-      //todo Later: 
-      peer.on('call', function(call) {
-        hide_btns();
-        getUserMedia({video: true, audio: true}, function(stream) {
-          console.log(room_member_list.includes(data_received),'data received >>', data_received)
-          if(!room_member_list.includes(data_received)){
-            call.answer(stream); // Answer the call with an A/V stream.
-            call.once('stream', function(remoteStream) {
-              var canvas = document.getElementById('canvas');
-              var video_element = document.createElement('video');
-              video_element.setAttribute('height','480');
-              video_element.setAttribute('width','640');
-              //video_element.setAttribute('id',data_received)
-              video_element.autoplay = true;
-              video_element.srcObject = remoteStream;
-              canvas.append(video_element);
-              document.getElementById('myvideo').srcObject = stream;
-              room_member_list.push(data_received);
-              console.log(room_member_list) 
-              show_leave_btn()
-            })
-          
-            
-          }
-        }, function(err) {
-          console.log('Failed to get local stream' ,err);
-        });
-      });
-      $(document).on('submit','#peer_id_updateform',function(e){
-        e.preventDefault();
-        var token = "{{csrf_token}}";
-        $.ajax({
-          type: "POST",
-          headers: { "X-CSRFToken": token },
-          url: "{% url 'home' %}",
-          data: {'peer_id':document.getElementById('id_peer_id').value},
-
-          success: function (data) {
-            /*console.log(data);*/
-          },
-          error: function (data) {},
-        });
-      })
-      /*window.onbeforeunload = function(e) {
-          firebase.database().ref('users/{{ curr_user }}/room').get().then((bachu)=>{
-            firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}`).remove()
-            
-          })
-      };*/
-      /*leave=()=>{
-        firebase.database().ref('users/{{ curr_user }}/room').get().then((snapshot)=>{
-          firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}`).remove().then((childsnapshot)=>{
-            firebase.database().ref('users/{{ curr_user }}/room').remove().then(()=>{
-              window.location.reload()
-            })
-          })
-        })
-      }
-      
-      firebase.database().ref('users/{{ curr_user }}/room').on('value',(snapshot)=>{
-        if(snapshot.val()!=null){
-          firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed', (data) => {
-          console.log('removed',data.key)
-          firebase.database().ref(`users/${data.key}/peer_id`).get().then((child)=>{
-            document.getElementById(`${child.val().peer_id}`).remove()
-            console.log(child.val().peer_id,' video removed')
-          })
-          })
-        }
-        
-        })*/
-      
+			success: function (data) {
+				/*console.log(data);*/
+			},
+			error: function (data) {},
+			});
+		})
+		window.onbeforeunload = function(e) {
+			firebase.database().ref('users/{{ curr_user }}/room').get().then((bachu)=>{
+				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}`).remove()
+				firebase.database().ref('users/{{ curr_user }}/room').remove()
+			});
+		}
+		
+		leave=()=>{
+			window.location.reload()
+		}
+		
+		firebase.database().ref('users/{{ curr_user }}/room').on('value',(snapshot)=>{
+			if(snapshot.val()!=null){
+				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed', (data) => {
+					console.log('removed',data.key)
+					document.getElementById(`${data.key}`).remove()
+					if(document.getElementById('canvas').innerHTML==''){
+						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}`).remove().then((childu)=>{
+							document.getElementById('call_ended').style.display = 'block';
+							document.getElementById('myvideo').remove();
+							setTimeout(()=>{
+								window.location.reload()
+							},2000)
+						})
+					}
+				})
+			}
+		})
+		var user_buttons = document.getElementById('users_btn').children
+		for( child of user_buttons){
+			firebase.database().ref(`users/${child.innerText}/peer_id`).on('child_changed',(childu)=>{
+				child.value = childu.val();
+			})
+		}
     </script>
   
 
