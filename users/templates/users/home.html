@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <h1>home</h1>
     <form method="POST" id="peer_id_updateform"enctype="multipart/form-data">
         {% csrf_token %}
         <fieldset class="form-group">
@@ -18,8 +17,16 @@
     </div>
 	<div id="call_ended" class="h1" style='display:none;'>Call Ended</div>
     <div id="canvas"></div>
-    <video id='myvideo' width="320" height="240" autoplay muted></video>
-    <div id="leave" class="btn btn-danger btn-sm" onclick="leave();" style="display: none;">Leave</div>
+    <div class="myvideo_container">
+		<video id='myvideo' width="320" height="240" autoplay muted></video>
+		<div id="mymuted">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-mic-mute" viewBox="0 0 16 16">
+				<path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4.02 4.02 0 0 0 12 8V7a.5.5 0 0 1 1 0v1zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a4.973 4.973 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4zm3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3z"/>
+				<path d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607zm-7.84-9.253 12 12 .708-.708-12-12-.708.708z"/>
+			  </svg>
+		</div>
+	</div>
+    
     <div id="users_btn">
       {% for i in users %}
             {% if i.user.username != curr_user %}
@@ -27,6 +34,25 @@
           	{% endif %}
       {% endfor %}
     </div>
+	<div class="floating_btns" id="toggle_btns">
+		<div class="btn btn-success btn-sm" id="toggle_audio" onclick="toggle_audio()">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewBox="0 0 16 16">
+				<path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+				<path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
+			  </svg>
+		</div>
+		<div class="btn btn-danger btn-sm" onclick="leave();">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone-x" viewBox="0 0 16 16">
+				<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+				<path fill-rule="evenodd" d="M11.146 1.646a.5.5 0 0 1 .708 0L13 2.793l1.146-1.147a.5.5 0 0 1 .708.708L13.707 3.5l1.147 1.146a.5.5 0 0 1-.708.708L13 4.207l-1.146 1.147a.5.5 0 0 1-.708-.708L12.293 3.5l-1.147-1.146a.5.5 0 0 1 0-.708z"/>
+			  </svg>
+		</div>
+		<div class="btn btn-success btn-sm" id="toggle_video" onclick="toggle_video()">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/>
+			  </svg>
+		</div>
+	</div>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 	<!-- The core Firebase JS SDK is always required and must be listed first -->
@@ -61,6 +87,7 @@
 		var peer = new Peer();
 		var myid;
 		var room_member_list=[];
+		var mystream;
 		peer.on('open', function(id) {
 			myid = id;
 			firebase.database().ref('users/{{ curr_user }}/peer_id').set({
@@ -73,7 +100,8 @@
 			document.getElementById('users_btn').style.display = 'none';
 		}
 		function show_leave_btn(){
-			document.getElementById('leave').style.display = 'block';
+			document.getElementById('toggle_btns').style.display = 'flex';
+
 		}
 		function create_room(uid,uname){
 			hide_btns();
@@ -81,27 +109,38 @@
 			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
 			if(snapshot.val()!=null){
 				firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
-				member:'1',
+					video:true,
+					audio:true,
 				})
 				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
-				member:'1',
+					video:true,
+					audio:true,
 				})
 				firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
 				firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
 				childsnapshot.forEach((element)=>{
-					console.log(element.key, element.key!='{{ curr_user }}')
-					if(element.key!='{{ curr_user }}'){
-					firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
-						connect(getting_members_id.val().peer_id,element.key);
+					//console.log(element.key, element.key!='{{ curr_user }}')
+						if(element.key!='{{ curr_user }}'){
+							firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+								connect(getting_members_id.val().peer_id,element.key);
+
+							})
+							firebase.database().ref(`/room/${snapshot.val().room}/${element.key}/`).on('child_changed',(member_stream_properties)=>{
+								if(member_stream_properties.val()==false && member_stream_properties.key=='audio'){
+									document.getElementById(`${element.key}`).parentElement.getElementsByClassName('muted')[0].style.display = 'flex';
+								}else if(member_stream_properties.val()==true && member_stream_properties.key=='audio'){
+									document.getElementById(`${element.key}`).parentElement.getElementsByClassName('muted')[0].style.display = 'none';
+								}
+
+							})
+						}
 					})
-					}
-				})
 				})
 			}else{
 				firebase.database().ref('room_number/').get().then((snapshot)=>{
-					console.log(snapshot.val().room_number)
+					//console.log(snapshot.val().room_number)
 					var new_room_number = eval(snapshot.val().room_number)+1;
-					console.log(new_room_number)
+					//console.log(new_room_number)
 					firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
 					firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
 					firebase.database().ref('room_number/').update({room_number:new_room_number,});
@@ -113,23 +152,36 @@
 		}
 		sendvideocall = (anotherpeersid,uname)=>{
 			getUserMedia({video: true, audio: true,}, function(stream) {
-			var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
-			call.once('stream', function(remoteStream) {
-				if(!room_member_list.includes(remoteStream.id)){
-					console.log(remoteStream.id,'send vala')
-					room_member_list.push(remoteStream.id)
-					var canvas = document.getElementById('canvas');
-					var video_element = document.createElement('video');
-					//video_element.setAttribute('height','480');
-					//video_element.setAttribute('width','640');
-					video_element.setAttribute('id',uname)
-					video_element.autoplay = true;
-					video_element.srcObject = remoteStream;
-					canvas.append(video_element);
-					document.getElementById('myvideo').srcObject = stream;
-					show_leave_btn();
-				}
-			})
+				mystream = stream;
+				var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
+				call.once('stream', function(remoteStream) {
+					if(!room_member_list.includes(remoteStream.id)){
+						room_member_list.push(remoteStream.id)
+						var canvas = document.getElementById('canvas');
+						var div = document.createElement('div');
+						
+						div.setAttribute('id',`${uname}div`)
+						var video_element = document.createElement('video');
+						video_element.setAttribute('id',uname)
+						video_element.autoplay = true;
+						video_element.srcObject = remoteStream;
+						div.append(video_element);
+						var muted_icon_div = document.createElement('div')
+						muted_icon_div.setAttribute('class','muted')
+						var mute_icon = document.createElement('i');
+						mute_icon.setAttribute('class','fa fa-microphone-slash')
+						var display_uname = document.createElement('div')
+						display_uname.setAttribute('class','display_uname px-1')
+						display_uname.innerText = uname
+						muted_icon_div.append(mute_icon)
+						div.append(muted_icon_div);
+						div.append(display_uname);
+						canvas.append(div);
+						document.getElementById('myvideo').srcObject = stream;
+						show_leave_btn();
+						//document.getElementById('toggle_btns').style.display = 'flex';
+					}
+				})
 			}, function(err) {
 			console.log('Failed to get local stream' ,err);
 			});
@@ -149,23 +201,44 @@
 		peer.on('call', function(call) {
 			hide_btns();
 			getUserMedia({video: true, audio: true}, function(stream) {
+				mystream = stream;
 				data_received = call.metadata.userName;
 				call.answer(stream); // Answer the call with an A/V stream.
 				call.once('stream', function(remoteStream) {
 					if(!room_member_list.includes(remoteStream.id)){
 						room_member_list.push(remoteStream.id)
-						console.log(remoteStream.id,'receive vala')
+						//console.log(remoteStream.id,'receive vala')
+						var div = document.createElement('div');
 						var canvas = document.getElementById('canvas');
 						var video_element = document.createElement('video');
-						video_element.setAttribute('height','480');
-						video_element.setAttribute('width','640');
 						video_element.setAttribute('id',data_received);
 						video_element.autoplay = true;
 						video_element.srcObject = remoteStream;
-						canvas.append(video_element);
+						div.append(video_element);
+						var muted_icon_div = document.createElement('div')
+						muted_icon_div.setAttribute('class','muted')
+						var mute_icon = document.createElement('i');
+						mute_icon.setAttribute('class','fa fa-microphone-slash')
+						var display_uname = document.createElement('div')
+						display_uname.setAttribute('class','display_uname px-1')
+						display_uname.innerText = data_received
+						muted_icon_div.append(mute_icon)
+						div.append(muted_icon_div);
+						div.append(display_uname)
+						canvas.append(div);
 						document.getElementById('myvideo').srcObject = stream;
-						console.log(room_member_list) 
 						show_leave_btn()
+						//document.getElementById('toggle_btns').style.display = 'flex';
+						firebase.database().ref('users/{{curr_user}}/room').get().then((child)=>{
+							firebase.database().ref(`/room/${child.val().room}/${data_received}/`).on('child_changed',(member_stream_properties)=>{
+								if(member_stream_properties.val()==false && member_stream_properties.key=='audio'){
+									document.getElementById(`${data_received}`).parentElement.getElementsByClassName('muted')[0].style.display = 'flex';
+								}else if(member_stream_properties.val()==true && member_stream_properties.key=='audio'){
+									document.getElementById(`${data_received}`).parentElement.getElementsByClassName('muted')[0].style.display = 'none';
+								}
+
+							})
+						})
 					}
 					})
 				//}
@@ -204,7 +277,7 @@
 			if(snapshot.val()!=null){
 				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed', (data) => {
 					console.log('removed',data.key)
-					document.getElementById(`${data.key}`).remove()
+					document.getElementById(`${data.key}`).parentElement.remove()
 					if(document.getElementById('canvas').innerHTML==''){
 						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}`).remove().then((childu)=>{
 							document.getElementById('call_ended').style.display = 'block';
@@ -223,6 +296,38 @@
 				child.value = childu.val();
 			})
 		}
+
+		function toggle_audio(){
+			mystream.getAudioTracks()[0].enabled = !(mystream.getAudioTracks()[0].enabled);
+			if(!mystream.getAudioTracks()[0].enabled){
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn-sm');
+				document.getElementById('mymuted').style.display = 'flex';
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
+				});
+			}else{
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-success btn-sm');
+				document.getElementById('mymuted').style.display = 'none';
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:true})
+				});
+			}
+		}
+		
+		function toggle_video(){
+			mystream.getVideoTracks()[0].enabled = !(mystream.getVideoTracks()[0].enabled);
+				if(!mystream.getVideoTracks()[0].enabled){
+					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn-sm');
+					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
+					});
+				}else{
+					document.getElementById('toggle_video').setAttribute('class','btn btn-success btn-sm');
+					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
+					});
+				}
+			}
     </script>
   
 

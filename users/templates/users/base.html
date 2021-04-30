@@ -9,6 +9,7 @@
 
     <!-- <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}"> -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     {% if title %}
         <title>Django Blog - {{ title }}</title>
     {% else %}
@@ -21,10 +22,72 @@
       video{
         transform: rotateY(180deg);
         border-radius: .5em;
+        height: 100%;
+        width: 100%;
       }
       #canvas{
-        display: flexbox;
+        display: grid;
         flex-wrap: wrap;
+        grid-template-columns: auto auto auto;
+      }
+      #canvas>div{
+        position: relative;
+        width: fit-content;
+      }
+      .floating_btns{
+        position: fixed;
+        height: 5em;
+        width: 100vw;
+        display: none;
+        top: 100%;
+        left: 50%;
+        transform: translate(-50%,-100%);
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: row;
+        background: rgba(0,0,0,0.2);
+
+      }
+      .floating_btns>div{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 2.5em;
+        width: 2.5em;
+      }
+      .myvideo_container{
+        position: relative;
+        width: 10em;
+      }
+      #mymuted,.muted{
+
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 1.6em;
+        width: 1.6em;
+        border-radius: 50%;
+        background: red;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        transform: translate(-.5em,-.5em);
+      }
+      .muted{
+        display: none;
+      }
+      .fa{
+        color: white;
+      }
+      .display_uname{
+        position: absolute;
+        top: .5em;
+        left: .5em;
+        height: fit-content;
+        width: fit-content;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border-radius: .3em;
       }
     </style>
 </head>
