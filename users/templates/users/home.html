@@ -87,7 +87,7 @@
 		var peer = new Peer();
 		var myid;
 		var room_member_list=[];
-		var mystream;
+		var mystream =[];
 		peer.on('open', function(id) {
 			myid = id;
 			firebase.database().ref('users/{{ curr_user }}/peer_id').set({
@@ -125,16 +125,19 @@
 								connect(getting_members_id.val().peer_id,element.key);
 
 							})
-							firebase.database().ref(`/room/${snapshot.val().room}/${element.key}/`).on('child_changed',(member_stream_properties)=>{
-								if(member_stream_properties.val()==false && member_stream_properties.key=='audio'){
-									document.getElementById(`${element.key}`).parentElement.getElementsByClassName('muted')[0].style.display = 'flex';
-								}else if(member_stream_properties.val()==true && member_stream_properties.key=='audio'){
-									document.getElementById(`${element.key}`).parentElement.getElementsByClassName('muted')[0].style.display = 'none';
-								}
-
-							})
+							
 						}
 					})
+				})
+				firebase.database().ref(`/room/${snapshot.val().room}/`).on('child_changed',(member_stream_properties)=>{
+					if(member_stream_properties.key != '{{ curr_user }}'){
+						if(member_stream_properties.val().audio==false ){
+							document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
+						}else if(member_stream_properties.val().audio==true ){
+							document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
+						}
+					}
+
 				})
 			}else{
 				firebase.database().ref('room_number/').get().then((snapshot)=>{
@@ -152,7 +155,7 @@
 		}
 		sendvideocall = (anotherpeersid,uname)=>{
 			getUserMedia({video: true, audio: true,}, function(stream) {
-				mystream = stream;
+				mystream.push(stream);
 				var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
 				call.once('stream', function(remoteStream) {
 					if(!room_member_list.includes(remoteStream.id)){
@@ -168,6 +171,7 @@
 						div.append(video_element);
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
+						muted_icon_div.setAttribute('id',`${uname}muted`)
 						var mute_icon = document.createElement('i');
 						mute_icon.setAttribute('class','fa fa-microphone-slash')
 						var display_uname = document.createElement('div')
@@ -180,6 +184,13 @@
 						document.getElementById('myvideo').srcObject = stream;
 						show_leave_btn();
 						//document.getElementById('toggle_btns').style.display = 'flex';
+						firebase.database().ref(`users/${uname}/room`).get().then((childsnapshot)=>{
+							firebase.database().ref(`room/${childsnapshot.val().room}/${uname}`).get().then((child)=>{
+								if(!child.val().audio){
+									document.getElementById(`${uname}muted`).style.display = 'flex';
+								}
+							})
+						})
 					}
 				})
 			}, function(err) {
@@ -201,7 +212,7 @@
 		peer.on('call', function(call) {
 			hide_btns();
 			getUserMedia({video: true, audio: true}, function(stream) {
-				mystream = stream;
+				mystream.push(stream);
 				data_received = call.metadata.userName;
 				call.answer(stream); // Answer the call with an A/V stream.
 				call.once('stream', function(remoteStream) {
@@ -217,6 +228,7 @@
 						div.append(video_element);
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
+						muted_icon_div.setAttribute('id',`${data_received}muted`)
 						var mute_icon = document.createElement('i');
 						mute_icon.setAttribute('class','fa fa-microphone-slash')
 						var display_uname = document.createElement('div')
@@ -230,11 +242,14 @@
 						show_leave_btn()
 						//document.getElementById('toggle_btns').style.display = 'flex';
 						firebase.database().ref('users/{{curr_user}}/room').get().then((child)=>{
-							firebase.database().ref(`/room/${child.val().room}/${data_received}/`).on('child_changed',(member_stream_properties)=>{
-								if(member_stream_properties.val()==false && member_stream_properties.key=='audio'){
-									document.getElementById(`${data_received}`).parentElement.getElementsByClassName('muted')[0].style.display = 'flex';
-								}else if(member_stream_properties.val()==true && member_stream_properties.key=='audio'){
-									document.getElementById(`${data_received}`).parentElement.getElementsByClassName('muted')[0].style.display = 'none';
+							firebase.database().ref(`/room/${child.val().room}/`).on('child_changed',(member_stream_properties)=>{
+								console.log(member_stream_properties.key)
+								if(member_stream_properties.key != '{{ curr_user }}'){
+									if(member_stream_properties.val().audio==false ){
+										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
+									}else if(member_stream_properties.val().audio==true ){
+										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
+									}
 								}
 
 							})
@@ -298,8 +313,9 @@
 		}
 
 		function toggle_audio(){
-			mystream.getAudioTracks()[0].enabled = !(mystream.getAudioTracks()[0].enabled);
-			if(!mystream.getAudioTracks()[0].enabled){
+			for(stream2 of mystream){
+				stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
+			if(!stream2.getAudioTracks()[0].enabled){
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn-sm');
 				document.getElementById('mymuted').style.display = 'flex';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
@@ -312,11 +328,13 @@
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:true})
 				});
 			}
+			}
 		}
 		
 		function toggle_video(){
-			mystream.getVideoTracks()[0].enabled = !(mystream.getVideoTracks()[0].enabled);
-				if(!mystream.getVideoTracks()[0].enabled){
+			for(stream1 of mystream){
+				stream1.getVideoTracks()[0].enabled = !(stream1.getVideoTracks()[0].enabled);
+				if(!stream1.getVideoTracks()[0].enabled){
 					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn-sm');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
@@ -327,6 +345,7 @@
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
 					});
 				}
+			}
 			}
     </script>
   
