@@ -30,7 +30,7 @@
     <div id="users_btn">
       {% for i in users %}
             {% if i.user.username != curr_user %}
-            	<button onclick="create_room('{{ i.peer_id }}','{{ i.user.username }}')" value= '{{ i.peer_id }}'>{{ i.user.username }}</button>
+            	<button onclick="create_room('{{ i.user.username }}')">{{ i.user.username }}</button>
           	{% endif %}
       {% endfor %}
     </div>
@@ -103,9 +103,8 @@
 			document.getElementById('toggle_btns').style.display = 'flex';
 
 		}
-		function create_room(uid,uname){
+		function create_room(uname){
 			hide_btns();
-			uid = this.value;
 			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
 			if(snapshot.val()!=null){
 				firebase.database().ref(`room/${snapshot.val().room}/${uname}`).get().then((child)=>{
@@ -114,6 +113,10 @@
 							video:true,
 							audio:true,
 						})
+					}else{
+						firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
+							member:1,
+						})
 					}
 				})
 				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
@@ -121,7 +124,7 @@
 					audio:true,
 				})
 				firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
-				firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
+				firebase.database().ref(`/room/${snapshot.val().room}/`).on('value',(childsnapshot)=>{
 				childsnapshot.forEach((element)=>{
 					//console.log(element.key, element.key!='{{ curr_user }}')
 						if(element.key!='{{ curr_user }}'){
@@ -151,7 +154,7 @@
 					firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
 					firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
 					firebase.database().ref('room_number/').update({room_number:new_room_number,});
-					create_room(uid,uname);
+					create_room(uname);
 				})
 				
 			}
@@ -316,12 +319,11 @@
 				})
 			}
 		})
-		var user_buttons = document.getElementById('users_btn').children
-		for( child of user_buttons){
+		/*var user_buttons = Array.from(document.getElementById('users_btn').children).forEach((child)=>{
 			firebase.database().ref(`users/${child.innerText}/peer_id`).on('child_changed',(childu)=>{
 				child.value = childu.val();
 			})
-		}
+		})*/
 
 		function toggle_audio(){
 			for(stream2 of mystream){
