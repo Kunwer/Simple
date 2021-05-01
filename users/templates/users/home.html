@@ -108,9 +108,13 @@
 			uid = this.value;
 			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
 			if(snapshot.val()!=null){
-				firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
-					video:true,
-					audio:true,
+				firebase.database().ref(`room/${snapshot.val().room}/${uname}`).get().then((child)=>{
+					if(child.val()==null){
+						firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
+							video:true,
+							audio:true,
+						})
+					}
 				})
 				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
 					video:true,
@@ -162,7 +166,6 @@
 						room_member_list.push(remoteStream.id)
 						var canvas = document.getElementById('canvas');
 						var div = document.createElement('div');
-						
 						div.setAttribute('id',`${uname}div`)
 						var video_element = document.createElement('video');
 						video_element.setAttribute('id',uname)
@@ -222,6 +225,7 @@
 						var div = document.createElement('div');
 						var canvas = document.getElementById('canvas');
 						var video_element = document.createElement('video');
+						div.setAttribute('id',`${data_received}div`)
 						video_element.setAttribute('id',data_received);
 						video_element.autoplay = true;
 						video_element.srcObject = remoteStream;
@@ -252,6 +256,13 @@
 									}
 								}
 
+							})
+						})
+						firebase.database().ref(`users/${data_received}/room`).get().then((childsnapshot)=>{
+							firebase.database().ref(`room/${childsnapshot.val().room}/${data_received}`).get().then((child)=>{
+								if(!child.val().audio){
+									document.getElementById(`${data_received}muted`).style.display = 'flex';
+								}
 							})
 						})
 					}
@@ -292,7 +303,7 @@
 			if(snapshot.val()!=null){
 				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed', (data) => {
 					console.log('removed',data.key)
-					document.getElementById(`${data.key}`).parentElement.remove()
+					document.getElementById(`${data.key}div`).remove()
 					if(document.getElementById('canvas').innerHTML==''){
 						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}`).remove().then((childu)=>{
 							document.getElementById('call_ended').style.display = 'block';
