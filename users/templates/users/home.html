@@ -107,24 +107,12 @@
 			hide_btns();
 			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
 			if(snapshot.val()!=null){
-				firebase.database().ref(`room/${snapshot.val().room}/${uname}`).get().then((child)=>{
-					if(child.val()==null){
-						firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
-							video:true,
-							audio:true,
-						})
-					}else{
-						firebase.database().ref(`/room/${snapshot.val().room}/${uname}/`).set({
-							member:1,
-						})
-					}
-				})
 				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
-					video:true,
-					audio:true,
-				})
+						video:true,
+						audio:true,
+					})
 				firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
-				firebase.database().ref(`/room/${snapshot.val().room}/`).on('value',(childsnapshot)=>{
+				firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
 				childsnapshot.forEach((element)=>{
 					//console.log(element.key, element.key!='{{ curr_user }}')
 						if(element.key!='{{ curr_user }}'){
@@ -154,6 +142,14 @@
 					firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
 					firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
 					firebase.database().ref('room_number/').update({room_number:new_room_number,});
+					firebase.database().ref(`/room/${new_room_number}/${uname}/`).set({
+						video:true,
+						audio:true,
+					})
+					firebase.database().ref(`/room/${new_room_number}/{{ curr_user }}/`).set({
+						video:true,
+						audio:true,
+					})
 					create_room(uname);
 				})
 				
