@@ -12,27 +12,44 @@
             <button class="btn btn-outline-info" id='peer_update_btn' type="submit">Sign Up</button>
         </div>
     </form>
-    <div>
-        <h1>{{ curr_user }}</h1>
-    </div>
-	<div id="call_ended" class="h1" style='display:none;'>Call Ended</div>
-    <div id="canvas"></div>
-    <div class="myvideo_container">
-		<video id='myvideo' width="320" height="240" autoplay muted></video>
-		<div id="mymuted">
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-mic-mute" viewBox="0 0 16 16">
-				<path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4.02 4.02 0 0 0 12 8V7a.5.5 0 0 1 1 0v1zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a4.973 4.973 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4zm3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3z"/>
-				<path d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607zm-7.84-9.253 12 12 .708-.708-12-12-.708.708z"/>
-			  </svg>
+    <div id='content' style="display:none"> </div>
+    <div class="container-fluid">
+		<div class="row">
+			<div>
+				<h1>{{ curr_user }}</h1>
+			</div>
+			<div id="my_room"></div>
+			<div id="call_ended" class="h1" style='display:none;'>Call Ended</div>
+		</div>
+		<div class="row">
+			<div class="col-9">
+				<div id="canvas"></div>
+				<div class="myvideo_container">
+					<video id='myvideo' width="320" height="240" autoplay muted></video>
+					<div id="mymuted">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-mic-mute" viewBox="0 0 16 16">
+							<path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4.02 4.02 0 0 0 12 8V7a.5.5 0 0 1 1 0v1zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a4.973 4.973 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4zm3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3z"/>
+							<path d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607zm-7.84-9.253 12 12 .708-.708-12-12-.708.708z"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+			<div class="col-3 border border-dark" id="chatbox" >
+				<div id="msgs"></div>
+				<div class="chatinput">
+					<input type="text" id="input_msg">
+					<div id="send" class="btn-sm btn-info" onclick="send_msg()">
+						<i class="fa fa-paper-plane"></i>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
-    
-    <div id="users_btn">
-      {% for i in users %}
-            {% if i.user.username != curr_user %}
-            	<button onclick="create_room('{{ i.user.username }}')">{{ i.user.username }}</button>
-          	{% endif %}
-      {% endfor %}
+    <div id="users_btn" class="">
+	  <div class="btn btn-outline-success m-1" onclick="create_room()" >Create Room</div>
+	  <input type="text" id='join_room' />
+	  <div class="btn btn-outline-success m-1" onclick="join_room()" >Join Room</div>
+
     </div>
 	<div class="floating_btns" id="toggle_btns">
 		<div class="btn btn-success btn-sm" id="toggle_audio" onclick="toggle_audio()">
@@ -52,7 +69,14 @@
 				<path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/>
 			  </svg>
 		</div>
+		<div class="btn-sm btn-success" id="screen" onclick="Screen_Share()">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cast" viewBox="0 0 16 16">
+				<path d="m7.646 9.354-3.792 3.792a.5.5 0 0 0 .353.854h7.586a.5.5 0 0 0 .354-.854L8.354 9.354a.5.5 0 0 0-.708 0z"/>
+				<path d="M11.414 11H14.5a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-13a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h3.086l-1 1H1.5A1.5 1.5 0 0 1 0 10.5v-7A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v7a1.5 1.5 0 0 1-1.5 1.5h-2.086l-1-1z"/>
+			  </svg>
+		</div>
 	</div>
+	<div id="new_room" style="display: none;"></div>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 	<!-- The core Firebase JS SDK is always required and must be listed first -->
@@ -83,6 +107,7 @@
 		firebase.initializeApp(firebaseConfig);
 		firebase.analytics();
 	</script>
+
     <script type="text/javascript" defer>
 		var peer = new Peer();
 		var myid;
@@ -101,63 +126,80 @@
 		}
 		function show_leave_btn(){
 			document.getElementById('toggle_btns').style.display = 'flex';
-
+			document.getElementById('chatbox').style.display = 'grid'
 		}
-		function create_room(uname){
+		function create_room(){
 			hide_btns();
-			firebase.database().ref(`users/${uname}/room`).get().then((snapshot)=>{
-			if(snapshot.val()!=null){
-				firebase.database().ref(`/room/${snapshot.val().room}/{{ curr_user }}/`).set({
-						video:true,
-						audio:true,
-					})
-				firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:snapshot.val().room,})
-				firebase.database().ref(`/room/${snapshot.val().room}/`).once('value',(childsnapshot)=>{
-				childsnapshot.forEach((element)=>{
-					//console.log(element.key, element.key!='{{ curr_user }}')
-						if(element.key!='{{ curr_user }}'){
-							firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
-								connect(getting_members_id.val().peer_id,element.key);
-
-							})
-							
-						}
-					})
-				})
-				firebase.database().ref(`/room/${snapshot.val().room}/`).on('child_changed',(member_stream_properties)=>{
-					if(member_stream_properties.key != '{{ curr_user }}'){
-						if(member_stream_properties.val().audio==false ){
-							document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
-						}else if(member_stream_properties.val().audio==true ){
-							document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
-						}
-					}
-
-				})
-			}else{
-				firebase.database().ref('room_number/').get().then((snapshot)=>{
-					//console.log(snapshot.val().room_number)
-					var new_room_number = eval(snapshot.val().room_number)+1;
-					//console.log(new_room_number)
-					firebase.database().ref(`users/${uname}/room/`).set({room:new_room_number,})
-					firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
-					firebase.database().ref('room_number/').update({room_number:new_room_number,});
-					firebase.database().ref(`/room/${new_room_number}/${uname}/`).set({
-						video:true,
-						audio:true,
-					})
-					firebase.database().ref(`/room/${new_room_number}/{{ curr_user }}/`).set({
-						video:true,
-						audio:true,
-					})
-					create_room(uname);
-				})
-				
-			}
+			dbRef = firebase.database().ref('room/')
+			var key = dbRef.push().getKey();
+			var new_room_number = key;
+			//console.log(new_room_number)
+			firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:new_room_number,})
+			//firebase.database().ref('room_number/').update({room_number:new_room_number,});
+			firebase.database().ref(`/room/${new_room_number}/{{ curr_user }}/`).set({
+				video:true,
+				audio:true,
 			})
+			/*firebase.database().ref(`roomadmin/${new_room_number}/{{ curr_user }}`).set({
+				admin:true,
+			})*/
+			document.getElementById('my_room').innerText = new_room_number;
+			firebase.database().ref(`wantstojoin/${new_room_number}/`).on('child_added',(child)=>{
+				var accept = confirm(`${child.key} wants to join`);
+				console.log('accept kr')
+				if(accept){
+					firebase.database().ref(`room/${new_room_number}/${child.key}`).set({
+						video:true,
+						audio:true,
+					})
+					firebase.database().ref(`users/${child.key}/room/`).set({room:new_room_number,})
+					firebase.database().ref(`wantstojoin/${new_room_number}/${child.key}`).remove()
+				}else{
+					firebase.database().ref(`wantstojoin/${new_room_number}/${child.key}`).remove()
+				}
+			})
+			window.history.replaceState('room', 'Title', `/room/${new_room_number}`);
 		}
+		
+		function join_room(){
+			hide_btns();
+			var join_room_id = document.getElementById('join_room').value;
+			document.getElementById('my_room').innerText = join_room_id;
+			//firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:join_room_id,})
+			//firebase.database().ref('room_number/').update({room_number:join_room_id,});
+			firebase.database().ref(`/wantstojoin/${join_room_id}/{{ curr_user }}/`).set({
+				video:true,
+				audio:true,
+			})
+			firebase.database().ref(`room/${join_room_id}/`).on('child_added',(child)=>{
+				console.log(child.key)
+				if(child.key=='{{ curr_user }}'){
+					firebase.database().ref(`/room/${join_room_id}/`).once('value',(childsnapshot)=>{
+						childsnapshot.forEach((element)=>{
+							if(element.key!='{{ curr_user }}'){
+								firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+									connect(getting_members_id.val().peer_id,element.key);
+								})
+							}
+						})
+					})
+					firebase.database().ref(`/room/${join_room_id}/`).on('child_changed',(member_stream_properties)=>{
+						if(member_stream_properties.key != '{{ curr_user }}'){
+							if(member_stream_properties.val().audio==false ){
+								document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
+							}else if(member_stream_properties.val().audio==true ){
+								document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
+							}
+						}
+					})
+				}
+				
+			})
+			
+		}
+		var constraints = {video: true, audio: true}
 		sendvideocall = (anotherpeersid,uname)=>{
-			getUserMedia({video: true, audio: true,}, function(stream) {
+			getUserMedia({video: true, audio: true}, function(stream) {
 				mystream.push(stream);
 				var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
 				call.once('stream', function(remoteStream) {
@@ -213,7 +255,12 @@
 		//todo Later: 
 		peer.on('call', function(call) {
 			hide_btns();
-			getUserMedia({video: true, audio: true}, function(stream) {
+			/*var toggle = false
+			if(constraints.audio==false && constraints.video==false){
+				constraints.audio=true
+				toggle = true
+			}*/
+			getUserMedia({audio:true,video:true}, function(stream) {
 				mystream.push(stream);
 				data_received = call.metadata.userName;
 				call.answer(stream); // Answer the call with an A/V stream.
@@ -223,12 +270,26 @@
 						//console.log(remoteStream.id,'receive vala')
 						var div = document.createElement('div');
 						var canvas = document.getElementById('canvas');
-						var video_element = document.createElement('video');
 						div.setAttribute('id',`${data_received}div`)
-						video_element.setAttribute('id',data_received);
-						video_element.autoplay = true;
-						video_element.srcObject = remoteStream;
-						div.append(video_element);
+
+						if(data_received=='{{ curr_user }}Screen'){
+							div.setAttribute('class','border border-dark d-flex justify-content-center align-items-center')
+							var presenting = document.createElement('div');
+							presenting.setAttribute('id',`${data_received}`)
+							presenting.setAttribute('class','')
+							presenting.innerText = 'You Are Presenting'
+							div.append(presenting)
+						}else{
+							
+							var video_element = document.createElement('video');
+							video_element.setAttribute('id',data_received);
+							video_element.autoplay = true;
+							video_element.srcObject = remoteStream;
+							if(data_received.includes('Screen')){
+								video_element.setAttribute('style','transform: rotateY(0deg);')
+							}
+							div.append(video_element);
+						}
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
 						muted_icon_div.setAttribute('id',`${data_received}muted`)
@@ -237,6 +298,7 @@
 						var display_uname = document.createElement('div')
 						display_uname.setAttribute('class','display_uname px-1')
 						display_uname.innerText = data_received
+						
 						muted_icon_div.append(mute_icon)
 						div.append(muted_icon_div);
 						div.append(display_uname)
@@ -246,7 +308,6 @@
 						//document.getElementById('toggle_btns').style.display = 'flex';
 						firebase.database().ref('users/{{curr_user}}/room').get().then((child)=>{
 							firebase.database().ref(`/room/${child.val().room}/`).on('child_changed',(member_stream_properties)=>{
-								console.log(member_stream_properties.key)
 								if(member_stream_properties.key != '{{ curr_user }}'){
 									if(member_stream_properties.val().audio==false ){
 										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
@@ -264,8 +325,21 @@
 								}
 							})
 						})
+						if(!audio_on){
+							toggle_mute()
+						}
+						if(!video_on){
+							toggle_videooff()
+						}
+						
+						/*check_audio()
+						check_video()*/
+						/*if(toggle){
+							stream.getAudioTracks()[0].enabled = !(stream.getAudioTracks()[0].enabled);
+						}*/
 					}
 					})
+					
 				//}
 			}, function(err) {
 				console.log('Failed to get local stream' ,err);
@@ -290,8 +364,12 @@
 		window.onbeforeunload = function(e) {
 			firebase.database().ref('users/{{ curr_user }}/room').get().then((bachu)=>{
 				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}`).remove()
+				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}Screen`).remove()
+				firebase.database().ref('users/{{ curr_user }}Screen/').remove()
 				firebase.database().ref('users/{{ curr_user }}/room').remove()
+
 			});
+			
 		}
 		
 		leave=()=>{
@@ -301,12 +379,13 @@
 		firebase.database().ref('users/{{ curr_user }}/room').on('value',(snapshot)=>{
 			if(snapshot.val()!=null){
 				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed', (data) => {
-					console.log('removed',data.key)
 					document.getElementById(`${data.key}div`).remove()
 					if(document.getElementById('canvas').innerHTML==''){
 						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}`).remove().then((childu)=>{
 							document.getElementById('call_ended').style.display = 'block';
 							document.getElementById('myvideo').remove();
+							firebase.database().ref(`chat/${snapshot.val().room}`).remove().then((smolchild)=>{})
+							document.getElementById('chatbox').style.display= 'none'
 							setTimeout(()=>{
 								window.location.reload()
 							},2000)
@@ -315,22 +394,61 @@
 				})
 			}
 		})
-		/*var user_buttons = Array.from(document.getElementById('users_btn').children).forEach((child)=>{
-			firebase.database().ref(`users/${child.innerText}/peer_id`).on('child_changed',(childu)=>{
-				child.value = childu.val();
-			})
-		})*/
-
+		
+		var audio_on = true
+		var video_on = true
 		function toggle_audio(){
+			if(audio_on){
+				toggle_mute();
+			}else{
+				toggle_unmute();	
+			}
+		}
+		function toggle_video(){
+			if(video_on){
+				toggle_videooff();
+			}else{
+				toggle_videoon();
+			}
+		}
+		function toggle_mute(){
+			audio_on = false
 			for(stream2 of mystream){
-				stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
+				if(stream2.getAudioTracks()[0].enabled){
+					stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
+				}
 			if(!stream2.getAudioTracks()[0].enabled){
+				constraints.audio = false
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn-sm');
 				document.getElementById('mymuted').style.display = 'flex';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
-						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
+					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
 				});
 			}else{
+				constraints.audio = true
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-success btn-sm');
+				document.getElementById('mymuted').style.display = 'none';
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:true})
+				});
+			}
+			}
+		}
+		function toggle_unmute(){
+			audio_on = true
+			for(stream2 of mystream){
+				if(!stream2.getAudioTracks()[0].enabled){
+					stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
+				}
+			if(!stream2.getAudioTracks()[0].enabled){
+				constraints.audio = false
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn-sm');
+				document.getElementById('mymuted').style.display = 'flex';
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
+				});
+			}else{
+				constraints.audio = true
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-success btn-sm');
 				document.getElementById('mymuted').style.display = 'none';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
@@ -340,15 +458,20 @@
 			}
 		}
 		
-		function toggle_video(){
+		function toggle_videoon(){
+			video_on = true
 			for(stream1 of mystream){
-				stream1.getVideoTracks()[0].enabled = !(stream1.getVideoTracks()[0].enabled);
 				if(!stream1.getVideoTracks()[0].enabled){
+					stream1.getVideoTracks()[0].enabled = !(stream1.getVideoTracks()[0].enabled);
+				}
+				if(!stream1.getVideoTracks()[0].enabled){
+					constraints.video = false
 					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn-sm');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
 					});
 				}else{
+					constraints.video = true
 					document.getElementById('toggle_video').setAttribute('class','btn btn-success btn-sm');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
@@ -356,7 +479,120 @@
 				}
 			}
 			}
+			function toggle_videooff(){
+				video_on = false
+			for(stream1 of mystream){
+				if(stream1.getVideoTracks()[0].enabled){
+					stream1.getVideoTracks()[0].enabled = !(stream1.getVideoTracks()[0].enabled);
+				}
+				
+				if(!stream1.getVideoTracks()[0].enabled){
+					constraints.video = false
+					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn-sm');
+					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
+					});
+				}else{
+					constraints.video = true
+					document.getElementById('toggle_video').setAttribute('class','btn btn-success btn-sm');
+					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
+					});
+				}
+			}
+			}
+			
+			function Screen_Share(){
+				var SShareID = new Peer();
+				
+				SShareID.on('open', function(id) {
+					var myscreenid = id;
+					firebase.database().ref(`users/{{ curr_user }}Screen/peer_id`).set({
+						peer_id:myscreenid,
+					})
+					
+				});
+						
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
+					firebase.database().ref(`/room/${child.val().room}/{{ curr_user }}Screen/`).set({
+						video:true,
+						audio:true,
+					})
+					firebase.database().ref(`users/{{ curr_user }}Screen/room/`).set({room:child.val().room,})
+				});
+				
+				var myScreen = navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+				firebase.database().ref('users/{{ curr_user }}/room').get().then((snapshot)=>{
+					firebase.database().ref(`room/${snapshot.val().room}/`).on('value',(childsnapshot)=>{
+						childsnapshot.forEach((element)=>{
+							if(element.key!='{{ curr_user }}Screen'){
+								firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+									myScreen.then(function(stream){
+										var call = peer.call(getting_members_id.val().peer_id, stream,{ metadata: { userName: '{{ curr_user }}Screen' } });
+										stream.getVideoTracks()[0].onended = function () {
+											console.log('removing stream')
+											firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}Screen`).remove().then((child)=>{})
+											firebase.database().ref('users/{{ curr_user }}Screen').remove().then((childsnap)=>{})
+										};
+									})
+								})
+							}
+						})
+					})
+				})
+				
+			}
     </script>
-  
+  <script type="text/javascript" defer>
+	  send_msg = ()=>{
+		if(document.getElementById('input_msg').value == ''){
+			return
+		}
+		message = document.getElementById('input_msg').value;
+		document.getElementById('input_msg').value = '';
+		firebase.database().ref('users/{{curr_user}}/room').get().then((child)=>{
+			firebase.database().ref(`chat/${child.val().room}`).push({
+				['{{curr_user}}']:message,
+			})
+		})
+	  }
+	  firebase.database().ref('users/{{curr_user}}/room').on('child_added',(child)=>{
+		  //isko connect k andr lgana h
+			firebase.database().ref(`chat/${child.val()}`).on('child_added',(childsnapshot)=>{
+				chat = document.getElementById('msgs');
+				msg = document.createElement('div')
+				msg.setAttribute('class','message');
+				span = document.createElement('span');
+				var uname=[]
+				for (var k in childsnapshot.val()) uname.push(k);
+				uname = uname[0]
+				current = new Date()
+				date = current.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+				span.innerText= uname + " " +date;
+				msg.innerText= childsnapshot.val()[uname];
+				msg.append(span);
+				chat.appendChild(msg);
+				
+			})
+		})
+		check_url = ()=>{
+			var currentUrl = window.location.href;
+			var url_parts = currentUrl.split('/')
+			if(url_parts.includes('room')){
+				firebase.database().ref(`room/${url_parts[url_parts.length-1]}`).get().then((child)=>{
+					if(child.val()!=null){
+						document.getElementById('join_room').value = url_parts[url_parts.length-1]
+						join_room()
+					}else{
+						window.location = '{% url "home" %}'
+					}
+				
+				})	
+				
+			}
+		}
+		check_url()
+		
+  </script>
 
 {% endblock content %}
