@@ -1,13 +1,12 @@
 {% extends "users/base.html" %}
 {% load crispy_forms_tags %}
-
 {% block content %}
     <div id='content' style="display:none"> </div>
+	<div id="noonejoined" class="h2" style="color: #999;">
+		Waiting for others to join..
+	</div>
     <div class="container-fluid">
 		<div class="row">
-			<!-- <div>
-				<h1>{{ curr_user }}</h1>
-			</div> -->
 			<div id="copy" style="display: none;" class="col-md-6 offset-md-3 mt-1">
 				<div class="alert alert-info alert-dismissible fade show" role="alert">
 					Room Link Copied to Clipboard!
@@ -16,11 +15,12 @@
 			</div>
 			<div id="my_room" style="display: none;"></div>
 			
-			<center><div id="call_ended" class="h1" style='display:none;'>Call Ended</div></center>
+			<center><div id="call_ended" class="h1 mt-4" style='display:none;'>Call Ended</div></center>
 		</div>
+		
 		<div class="row">
-			<div class="col-9">
-				<div id="canvas"></div>
+			<div class="container">
+				<div id="canvas" class="row row-cols-lg-4 row-cols-md-3 row-cols-2"></div>
 				<div class="myvideo_container">
 					<video id='myvideo' width="320" height="240" autoplay muted></video>
 					<div id="mymuted">
@@ -37,24 +37,33 @@
 	
 	<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
 		<div class="offcanvas-header border-bottom">
-			<h5 id="offcanvasRightLabel">Chat</h5>
+			<!-- <h5 id="offcanvasRightLabel">Chat</h5>
+			<h5 id="offcanvasLeftLabel">Chat</h5> -->
 			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 		</div>
 		<div class="offcanvas-body" id="offcanvas-body">
-			<div id="msgs" class="mb-5"></div>
-			<div class="chatinput">
-				<input type="text" id="input_msg" placeholder="Message" class="col-10">
-				<div id="send"  onclick="send_msg()">
-					<i class="fa fa-paper-plane"></i>
+			<div class="d-flex flex-row" style="justify-content: space-between !important;margin: 0 !important;">
+				<h5 class="sidebarheadings flex-fill d-flex align-items-center justify-content-center p-2 rounded" onclick='show_chat()'><i id="chat_icon" class="bi bi-chat-square-text-fill"></i></h5>
+				<h5 class="sidebarheadings flex-fill d-flex align-items-center justify-content-center p-2 rounded" onclick='show_people()'><i id="people_icon" class="bi bi-people"></i></h5>
+			</div>
+			<div id="allmsgs">
+				<div id="msgs" class="mb-5"></div>
+				<div class="chatinput">
+					<input type="text" id="input_msg" placeholder="Message" class="col-10">
+					<div id="send"  onclick="send_msg()">
+						<i class="fa fa-paper-plane"></i>
+					</div>
 				</div>
 			</div>
+			<div id="userlist" style="display:none"></div>
 		</div>
 	</div>
-	<div id="users_btn">
-		<div  class="d-flex justify-content-center align-items-center p-2">
-			<div class="btn btn-outline-info m-1" onclick="create_room()" >Create Room</div>
-			<input type="text" id='join_room' class="rounded border p-1" placeholder="Room Code" autocomplete="off" />
-			<div class="btn btn-outline-info m-1" onclick="join_room()" >Join Room</div>	  
+	<div id="users_btn" class="col-md-5 offset-md-1 col-12 mt-5" style="position: relative;">
+		<label for="users_btn" class="h3 text-muted p-2" style="position: absolute; top: 0;left: 0; transform: translate(25%,-60%);background: white;">Room</label>
+		<div class="py-5 d-flex flex-md-row flex-column  align-items-center border border-dark rounded" style="justify-content: space-evenly !important;">
+			<div class="btn btn-outline-primary m-1 p-2" onclick="create_room()" >Create Room</div>
+			<input type="text" id='join_room' class="rounded border p-1" placeholder="Enter Room Code" autocomplete="off" />
+			<div class="font-weight-bold btn-sm btn-outline-primary m-1 px-3" id="join" onclick="join_room()" >Join</div>
 		</div>
 	</div>
    
@@ -140,7 +149,6 @@
 			document.getElementById('toggle_btns').style.display = 'flex';
 			document.getElementById('chatbox').style.display = 'grid'
 		}
-		//show_leave_btn()
 		function create_room(){
 			hide_btns();
 			dbRef = firebase.database().ref('room/')
@@ -156,6 +164,7 @@
 			/*firebase.database().ref(`roomadmin/${new_room_number}/{{ curr_user }}`).set({
 				admin:true,
 			})*/
+			document.getElementById('noonejoined').style.display = 'flex'
 			document.getElementById('my_room').innerText = new_room_number;
 			const el = document.createElement('textarea');
 			var currentUrl = window.location.href;
@@ -226,24 +235,35 @@
 						room_member_list.push(remoteStream.id)
 						var canvas = document.getElementById('canvas');
 						var div = document.createElement('div');
+						var videodiv = document.createElement('div')
+						videodiv.setAttribute('class','idiv')
 						div.setAttribute('id',`${uname}div`)
-						div.setAttribute('class','rounded')
+						div.setAttribute('class','col rounded')
 						var video_element = document.createElement('video');
 						video_element.setAttribute('id',uname)
 						video_element.autoplay = true;
 						video_element.srcObject = remoteStream;
-						div.append(video_element);
+						videodiv.append(video_element);
+						var i = document.createElement('i');
+						i.setAttribute('class','bi bi-pin pin')
+						i.setAttribute('onclick',`pin('${uname}')`)
+						videodiv.append(i);
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
 						muted_icon_div.setAttribute('id',`${uname}muted`)
 						var mute_icon = document.createElement('i');
-						mute_icon.setAttribute('class','fa fa-microphone-slash')
+						mute_icon.setAttribute('class','bi bi-mic-mute')
 						var display_uname = document.createElement('div')
 						display_uname.setAttribute('class','display_uname px-1')
 						display_uname.innerText = uname
 						muted_icon_div.append(mute_icon)
-						div.append(muted_icon_div);
-						div.append(display_uname);
+						videodiv.append(muted_icon_div);
+						videodiv.append(display_uname);
+						div.append(videodiv)
+						if(pinned){	
+							div.setAttribute('style','display:none;');
+						}
+						document.getElementById('noonejoined').style.display = 'none'
 						canvas.append(div);
 						document.getElementById('myvideo').srcObject = stream;
 						show_leave_btn();
@@ -261,6 +281,7 @@
 			console.log('Failed to get local stream' ,err);
 			});
 		}
+
 
 		function connect(anotherpeersid,uname){
 			var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -290,39 +311,49 @@
 						//console.log(remoteStream.id,'receive vala')
 						var div = document.createElement('div');
 						var canvas = document.getElementById('canvas');
+						var videodiv = document.createElement('div')
+						videodiv.setAttribute('class','idiv')
 						div.setAttribute('id',`${data_received}div`)
-						div.setAttribute('class','rounded')
+						div.setAttribute('class','col rounded')
 						if(data_received=='{{ curr_user }}Screen'){
 							div.setAttribute('class','border border-dark d-flex justify-content-center align-items-center')
 							var presenting = document.createElement('div');
 							presenting.setAttribute('id',`${data_received}`)
-							presenting.setAttribute('class','col-4')
+							presenting.setAttribute('class','col')
 							presenting.innerText = 'You Are Presenting'
 							div.append(presenting)
 						}else{
 							
 							var video_element = document.createElement('video');
 							video_element.setAttribute('id',data_received);
-							video_element.setAttribute('class','rounded')
 							video_element.autoplay = true;
 							video_element.srcObject = remoteStream;
 							if(data_received.includes('Screen')){
 								video_element.setAttribute('style','transform: rotateY(0deg);')
 							}
-							div.append(video_element);
+							videodiv.append(video_element);
+							var i = document.createElement('i');
+							i.setAttribute('class','bi bi-pin pin')
+							i.setAttribute('onclick',`pin('${data_received}')`)
+							videodiv.append(i);
 						}
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
 						muted_icon_div.setAttribute('id',`${data_received}muted`)
 						var mute_icon = document.createElement('i');
-						mute_icon.setAttribute('class','fa fa-microphone-slash')
+						mute_icon.setAttribute('class','bi bi-mic-mute')
 						var display_uname = document.createElement('div')
 						display_uname.setAttribute('class','display_uname px-1')
 						display_uname.innerText = data_received
-						
 						muted_icon_div.append(mute_icon)
-						div.append(muted_icon_div);
-						div.append(display_uname)
+
+						videodiv.append(muted_icon_div);
+						videodiv.append(display_uname)
+						div.append(videodiv)
+						if(pinned){	
+							div.setAttribute('style','display:none;');
+						}
+						document.getElementById('noonejoined').style.display = 'none'
 						canvas.append(div);
 						document.getElementById('myvideo').srcObject = stream;
 						show_leave_btn()
@@ -388,13 +419,15 @@
 				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}Screen`).remove()
 				firebase.database().ref('users/{{ curr_user }}Screen/').remove()
 				firebase.database().ref('users/{{ curr_user }}/room').remove()
+				firebase.database().ref(`wantstojoin/${bachu.val().room}/{{ curr_user }}`).remove()
 
 			});
 		}
 		
 		leave=()=>{
-			window.location.reload()
+			window.location.href = '{% url "home" %}'
 		}
+		var all_users = document.getElementById('userlist')
 		
 		firebase.database().ref('users/{{ curr_user }}/room').on('value',(snapshot)=>{
 			if(snapshot.val()!=null){
@@ -413,8 +446,24 @@
 							},2000)
 						})
 					}
+				}) 
+				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_added',(child)=>{
+					var div = document.createElement('div')
+					var pin_icon = document.createElement('i')
+					pin_icon.setAttribute('class','bi bi-pin thumbtack')
+					pin_icon.setAttribute('onclick',`pin('${child.key}')`)
+					div.setAttribute('class','message border-top my-1 peoplelist');
+					div.setAttribute('id',`${child.key}_people`);
+					div.innerText = child.key
+					if(child.key != '{{curr_user}}'){
+						div.append(pin_icon)
+					}
+					all_users.append(div)
 				})
-			}
+				firebase.database().ref(`room/${snapshot.val().room}/`).on('child_removed',(child)=>{
+					document.getElementById(`${child.key}_people`).remove()
+				})
+			}	
 		})
 		
 		var audio_on = true
@@ -589,8 +638,7 @@
 					t_share = false
 				}
 			}
-    </script>
-  <script type="text/javascript" defer>
+
 	  send_msg = ()=>{
 		if(document.getElementById('input_msg').value == ''){
 			return
@@ -649,10 +697,65 @@
 		},500)
 
 		$(document).on('keypress',function(e) {
-			if(e.which == 13 && document.getElementById('chatbox').style.display == 'grid') {
-				send_msg();
+			if(document.getElementById('chatbox').style.display == 'grid' || true) {
+				if(e.which == 13){
+					send_msg();
+				}
+				
 			}
+			
 		});
+		$(document).on('keydown',function(e){
+			if(document.getElementById('chatbox').style.display == 'grid') {
+				if(e.which == 75){
+					alert('k pressed')
+				}
+			}
+		})
+		document.getElementById('join_room').addEventListener('input',function(){
+			if(!document.getElementById('join_room').value){
+				document.getElementById('join').style.display = 'none'
+			}
+			else {
+				document.getElementById('join').style.display = 'block'
+			}
+		})
+		show_chat = ()=>{
+			document.getElementById('allmsgs').style.display = 'block'
+			document.getElementById('userlist').style.display = 'none'
+			document.getElementById('chat_icon').setAttribute('class','bi bi-chat-square-text-fill')
+			document.getElementById('people_icon').setAttribute('class','bi bi-people')
+		}
+		show_people = ()=>{
+			document.getElementById('allmsgs').style.display = 'none'
+			document.getElementById('userlist').style.display = 'block'
+			document.getElementById('people_icon').setAttribute('class','bi bi-people-fill')
+			document.getElementById('chat_icon').setAttribute('class','bi bi-chat-square-text')
+		}
+		var pinned = false
+		function pin(user_name){
+			if(document.getElementById(`${user_name}div`).className.includes('col-12')){
+				document.getElementById('canvas').childNodes.forEach((child)=>{
+					child.style.display='flex'
+				})
+				document.getElementById(`${user_name}div`).className = 'col rounded'
+				document.getElementById(user_name).style.width = '';
+				pinned = false
+			}
+			else{
+				document.getElementById('canvas').childNodes.forEach((child)=>{
+				if(child.id!=`${user_name}div`){
+					child.style.display='none'
+				}else{
+					child.setAttribute('class','col-12 col-sm-12 col-md-12 col-lg-12 rounded')
+					document.getElementById(user_name).style.width = `${document.getElementById(user_name).videoWidth}px`
+				}
+				pinned=true
+
+			
+			})
+			}
+		}
   </script>
 
 {% endblock content %}
