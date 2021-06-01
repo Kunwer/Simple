@@ -11,7 +11,10 @@
 				<div class="alert alert-info alert-dismissible fade show" role="alert">
 					Room Link Copied to Clipboard!
 					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-				  </div>
+				</div>
+			</div>
+			<div id="noroom" class="col-md-6 offset-md-3 mt-1">
+				
 			</div>
 			<div id="my_room" style="display: none;"></div>
 			
@@ -58,15 +61,33 @@
 			<div id="userlist" style="display:none"></div>
 		</div>
 	</div>
-	<div id="users_btn" class="col-md-5 offset-md-1 col-12 mt-5" style="position: relative;">
-		<label for="users_btn" class="h3 text-muted p-2" style="position: absolute; top: 0;left: 0; transform: translate(25%,-60%);background: white;">Room</label>
-		<div class="py-5 d-flex flex-md-row flex-column  align-items-center border border-dark rounded" style="justify-content: space-evenly !important;">
-			<div class="btn btn-outline-primary m-1 p-2" onclick="create_room()" >Create Room</div>
-			<input type="text" id='join_room' class="rounded border p-1" placeholder="Enter Room Code" autocomplete="off" />
-			<div class="font-weight-bold btn-sm btn-outline-primary m-1 px-3" id="join" onclick="join_room()" >Join</div>
+	<div class="row main">
+		<div id="users_btn" class="col-md-5 offset-md-1 col-12 mt-5 pt-4 pb-3" style="position: relative; height: fit-content; background: rgba(255,255,255,0.9);">
+			<label for="users_btn" class="h3 text-muted p-1" style="position: absolute; top: 0;left: 0; transform: translate(29%,2%);background: rgba(255,255,255,1);">Room</label>
+			<div class="py-5 d-flex flex-md-row flex-column  align-items-center border border-dark rounded roomborder" style="justify-content: space-evenly !important;">
+				<div class="btn btn-outline-primary m-1 p-2" onclick="create_room()" >Create Room</div>
+				<input type="text" id='join_room' class="rounded border p-1" placeholder="Enter Room Code" autocomplete="off" />
+				<div class="font-weight-bold btn-sm btn-outline-primary m-1 px-3" id="join" onclick="join_room()" >Join</div>
+			</div>
+			
+		</div>
+		<div class=" col-md-2 offset-md-2 col-12 mt-5 d-flex align-items-center justify-content-center flex-column" id="selfvideocontainer" style="display: none !important;">
+			<video autoplay="true" id="selfvideo"></video>
+			<div class="d-flex align-items-center mt-1 flex-fill" id="selfvideobtns" style="justify-content: space-evenly;width: 100% !important;">
+				<div class="btn btn-outline-success " id="toggle_audio_home" onclick="toggle_audio_home()">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewBox="0 0 16 16">
+						<path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+						<path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
+					  </svg>
+				</div>
+				<div class="btn btn-outline-success" id="toggle_video_home" onclick="toggle_video_home()">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/>
+					  </svg>
+				</div>
+			</div>
 		</div>
 	</div>
-   
 		
 	<footer class="floating_btns" id="toggle_btns">
 		<div class="btn btn-outline-success " id="toggle_audio" onclick="toggle_audio()">
@@ -151,6 +172,7 @@
 		}
 		function create_room(){
 			hide_btns();
+			document.getElementById('selfvideocontainer').remove()
 			dbRef = firebase.database().ref('room/')
 			var key = dbRef.push().getKey();
 			var new_room_number = key;
@@ -191,8 +213,25 @@
 		}
 		
 		function join_room(){
-			hide_btns();
 			var join_room_id = document.getElementById('join_room').value;
+			if(join_room_id.includes('room')){
+				let url = join_room_id.split('/')
+				join_room_id = url[url.length - 1]
+			}
+			firebase.database().ref(`room/${join_room_id}/`).once('value',(child)=>{
+				if(!child.exists()){
+					document.getElementById('noroom').style.display = 'block'
+					document.getElementById('noroom').innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+						Room Does Not Exists!!
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>`
+					document.getElementById('join_room').value = '';
+					return
+				}else{
+					hide_btns();
+					document.getElementById('selfvideocontainer').remove()
+				}
+			})
 			document.getElementById('my_room').innerText = join_room_id;
 			//firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:join_room_id,})
 			//firebase.database().ref('room_number/').update({room_number:join_room_id,});
@@ -225,7 +264,6 @@
 			})
 			
 		}
-		var constraints = {video: true, audio: true}
 		sendvideocall = (anotherpeersid,uname)=>{
 			getUserMedia({video: true, audio: true}, function(stream) {
 				mystream.push(stream);
@@ -275,6 +313,12 @@
 								}
 							})
 						})
+						if(!audio_on){
+							toggle_mute()
+						}
+						if(!video_on){
+							toggle_videooff()
+						}
 					}
 				})
 			}, function(err) {
@@ -296,11 +340,6 @@
 		//todo Later: 
 		peer.on('call', function(call) {
 			hide_btns();
-			/*var toggle = false
-			if(constraints.audio==false && constraints.video==false){
-				constraints.audio=true
-				toggle = true
-			}*/
 			getUserMedia({audio:true,video:true}, function(stream) {
 				mystream.push(stream);
 				data_received = call.metadata.userName;
@@ -315,20 +354,25 @@
 						videodiv.setAttribute('class','idiv')
 						div.setAttribute('id',`${data_received}div`)
 						div.setAttribute('class','col rounded')
-						if(data_received=='{{ curr_user }}Screen'){
-							div.setAttribute('class','border border-dark d-flex justify-content-center align-items-center')
+						if(data_received=='{{ curr_user }}_Screen'){
+							div.setAttribute('class','border border-dark d-flex justify-content-center align-items-center flex-column rounded m-1 py-2')
 							var presenting = document.createElement('div');
 							presenting.setAttribute('id',`${data_received}`)
-							presenting.setAttribute('class','col')
+							presenting.setAttribute('class','col presenting rounded m-1 flex-fill text-center my-5')
 							presenting.innerText = 'You Are Presenting'
 							div.append(presenting)
+							let stop_share = document.createElement('div')
+							stop_share.setAttribute('class','btn btn-sm btn-outline-danger mt-1')
+							stop_share.innerText = 'Stop Presenting'
+							stop_share.setAttribute('onclick','stop_share()');
+							div.append(stop_share)
+							videodiv.setAttribute('style','display:none;');
 						}else{
-							
 							var video_element = document.createElement('video');
 							video_element.setAttribute('id',data_received);
 							video_element.autoplay = true;
 							video_element.srcObject = remoteStream;
-							if(data_received.includes('Screen')){
+							if(data_received.includes('_Screen')){
 								video_element.setAttribute('style','transform: rotateY(0deg);')
 							}
 							videodiv.append(video_element);
@@ -336,6 +380,13 @@
 							i.setAttribute('class','bi bi-pin pin')
 							i.setAttribute('onclick',`pin('${data_received}')`)
 							videodiv.append(i);
+							if(data_received.includes('_Screen')){
+								var i1 = document.createElement('i');
+								i1.setAttribute('class','bi bi-fullscreen fullscreen')
+								i1.setAttribute('onclick',`toggleFullscreen('${data_received}')`)
+								videodiv.append(i1);
+							}
+							
 						}
 						var muted_icon_div = document.createElement('div')
 						muted_icon_div.setAttribute('class','muted')
@@ -360,7 +411,7 @@
 						//document.getElementById('toggle_btns').style.display = 'flex';
 						firebase.database().ref('users/{{curr_user}}/room').get().then((child)=>{
 							firebase.database().ref(`/room/${child.val().room}/`).on('child_changed',(member_stream_properties)=>{
-								if(member_stream_properties.key != '{{ curr_user }}'){
+								if(member_stream_properties.key != '{{ curr_user }}' || !member_stream_properties.key.includes('_Screen')){
 									if(member_stream_properties.val().audio==false ){
 										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
 									}else if(member_stream_properties.val().audio==true ){
@@ -377,6 +428,7 @@
 								}
 							})
 						})
+
 						if(!audio_on){
 							toggle_mute()
 						}
@@ -416,8 +468,8 @@
 		window.onbeforeunload = function(e) {
 			firebase.database().ref('users/{{ curr_user }}/room').get().then((bachu)=>{
 				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}`).remove()
-				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}Screen`).remove()
-				firebase.database().ref('users/{{ curr_user }}Screen/').remove()
+				firebase.database().ref(`room/${bachu.val().room}/{{ curr_user }}_Screen`).remove()
+				firebase.database().ref('users/{{ curr_user }}_Screen/').remove()
 				firebase.database().ref('users/{{ curr_user }}/room').remove()
 				firebase.database().ref(`wantstojoin/${bachu.val().room}/{{ curr_user }}`).remove()
 
@@ -489,14 +541,12 @@
 					stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
 				}
 			if(!stream2.getAudioTracks()[0].enabled){
-				constraints.audio = false
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn');
 				document.getElementById('mymuted').style.display = 'flex';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
 				});
 			}else{
-				constraints.audio = true
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-success btn');
 				document.getElementById('mymuted').style.display = 'none';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
@@ -512,14 +562,12 @@
 					stream2.getAudioTracks()[0].enabled = !(stream2.getAudioTracks()[0].enabled);
 				}
 			if(!stream2.getAudioTracks()[0].enabled){
-				constraints.audio = false
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-danger btn');
 				document.getElementById('mymuted').style.display = 'flex';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
 				});
 			}else{
-				constraints.audio = true
 				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-success btn');
 				document.getElementById('mymuted').style.display = 'none';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
@@ -536,13 +584,11 @@
 					stream1.getVideoTracks()[0].enabled = !(stream1.getVideoTracks()[0].enabled);
 				}
 				if(!stream1.getVideoTracks()[0].enabled){
-					constraints.video = false
 					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
 					});
 				}else{
-					constraints.video = true
 					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-success btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
@@ -558,13 +604,11 @@
 				}
 				
 				if(!stream1.getVideoTracks()[0].enabled){
-					constraints.video = false
 					document.getElementById('toggle_video').setAttribute('class','btn btn-danger btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
 					});
 				}else{
-					constraints.video = true
 					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-success btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
@@ -577,33 +621,34 @@
 				var SShareID = new Peer();
 				SShareID.on('open', function(id) {
 					var myscreenid = id;
-					firebase.database().ref(`users/{{ curr_user }}Screen/peer_id`).set({
+					firebase.database().ref(`users/{{ curr_user }}_Screen/peer_id`).set({
 						peer_id:myscreenid,
 					})
 					
 				});
 						
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
-					firebase.database().ref(`/room/${child.val().room}/{{ curr_user }}Screen/`).set({
+					firebase.database().ref(`/room/${child.val().room}/{{ curr_user }}_Screen/`).set({
 						video:true,
 						audio:true,
 					})
-					firebase.database().ref(`users/{{ curr_user }}Screen/room/`).set({room:child.val().room,})
+					firebase.database().ref(`users/{{ curr_user }}_Screen/room/`).set({room:child.val().room,})
 				});
 				
 				myScreen = navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((snapshot)=>{
-					firebase.database().ref(`room/${snapshot.val().room}/`).get().then((childsnapshot)=>{
+					firebase.database().ref(`room/${snapshot.val().room}/`).on("value",(childsnapshot)=>{
 						childsnapshot.forEach((element)=>{
-							if(element.key!='{{ curr_user }}Screen'){
+							console.log('val',element.val(),'key',element.key)
+							if(element.key!='{{ curr_user }}_Screen'){
 								firebase.database().ref(`users/${element.key}/peer_id`).get().then((getting_members_id)=>{
 									myScreen.then(function(stream){
 										//document.getElementById('myscreenshare').srcObject = stream
 										document.getElementById('screen').setAttribute('class','btn btn-danger btn');
-										var call = peer.call(getting_members_id.val().peer_id, stream,{ metadata: { userName: '{{ curr_user }}Screen' } });
+										var call = peer.call(getting_members_id.val().peer_id, stream,{ metadata: { userName: '{{ curr_user }}_Screen' } });
 										stream.getVideoTracks()[0].onended = function () {
-											firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}Screen`).remove().then((child)=>{})
-											firebase.database().ref('users/{{ curr_user }}Screen').remove().then((childsnap)=>{})
+											firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}_Screen`).remove().then((child)=>{})
+											firebase.database().ref('users/{{ curr_user }}_Screen').remove().then((childsnap)=>{})
 											document.getElementById('screen').setAttribute('class','btn btn-outline-success btn');
 											t_share = false
 										};
@@ -613,8 +658,9 @@
 						})
 					})
 				})
-				
+				t_share = true
 			}
+			
 			stop_share = ()=>{
 				myScreen.then(function(stream){
 					const tracks = stream.getTracks();
@@ -622,20 +668,19 @@
 						track.stop();
 					});
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((snapshot)=>{				
-						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}Screen`).remove().then((child)=>{})
-						firebase.database().ref('users/{{ curr_user }}Screen').remove().then((childsnap)=>{})
+						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}_Screen`).remove().then((child)=>{})
+						firebase.database().ref('users/{{ curr_user }}_Screen').remove().then((childsnap)=>{})
 					})
 					document.getElementById('screen').setAttribute('class','btn btn-outline-success btn');
 					})		
+				t_share = false
 			}
-			t_share = false
+			var t_share = false
 			toggle_share=()=>{
 				if(!t_share){
-					Screen_Share()
-					t_share = true
+					Screen_Share()				
 				}else{
-					stop_share()
-					t_share = false
+					stop_share()		
 				}
 			}
 
@@ -673,6 +718,7 @@
 			})
 		})
 		document.getElementById('users_btn').style.display='none'
+		
 		check_url = ()=>{
 			var currentUrl = window.location.href;
 			var url_parts = currentUrl.split('/')
@@ -689,6 +735,7 @@
 				
 			}else{
 				document.getElementById('users_btn').style.display='block'
+				document.getElementById('selfvideocontainer').style.display='block'
 			}
 			
 		}
@@ -749,6 +796,7 @@
 				}else{
 					child.setAttribute('class','col-12 col-sm-12 col-md-12 col-lg-12 rounded')
 					document.getElementById(user_name).style.width = `${document.getElementById(user_name).videoWidth}px`
+					
 				}
 				pinned=true
 
@@ -756,6 +804,54 @@
 			})
 			}
 		}
+		var selfvideo = document.getElementById('selfvideo')
+
+		if (navigator.mediaDevices.getUserMedia) {
+		navigator.mediaDevices.getUserMedia({ video: true })
+			.then(function (stream) {
+			selfvideo.srcObject = stream;
+			})
+			.catch(function (err0r) {
+			console.log("Something went wrong!");
+			});
+		}
+		function toggleFullscreen(elem_id) {
+			let elem = document.getElementById(elem_id)
+			console.log(elem)
+			if (!document.fullscreenElement) {
+				elem.requestFullscreen().catch(err => {
+				alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+				});
+			} else {
+				document.exitFullscreen();
+			}
+		}
+		
+		toggle_audio_home = ()=>{
+			if (audio_on){
+				audio_on = false
+				document.getElementById('toggle_audio_home').setAttribute('class','btn-danger btn');
+			}
+			else{
+				audio_on = true
+				document.getElementById('toggle_audio_home').setAttribute('class','btn-outline-success btn');
+			}
+		}
+		toggle_video_home = ()=>{
+			if (video_on){
+				video_on = false
+				document.getElementById('toggle_video_home').setAttribute('class','btn-danger btn');
+				selfvideo.srcObject.getVideoTracks()[0].enabled = !(selfvideo.srcObject.getVideoTracks()[0].enabled);
+			}
+			else{
+				video_on = true
+				document.getElementById('toggle_video_home').setAttribute('class','btn-outline-success btn');
+				selfvideo.srcObject.getVideoTracks()[0].enabled = !(selfvideo.srcObject.getVideoTracks()[0].enabled);
+			}
+		}
+		$('#myAlert').on('closed.bs.alert', function () {
+			document.getElementById('noroom').style.display = 'none'
+		})
   </script>
 
 {% endblock content %}

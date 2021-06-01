@@ -1,19 +1,28 @@
 nav{
     background-color: #202124;
 }
+body{
+    /*background:url(http://drive.google.com/uc?export=view&id=12aHCrq3kOeJdqgLnmFV6jFm_GTQ6eawL) no-repeat center center fixed;
+    background-size: cover;
+    backdrop-filter: blur(1px);*/
+    min-height: 100vh;
+}
 #peer_id_updateform{
     display: none;
 }
 video{
-    transform: rotateY(180deg);
+    transform: rotateY(180deg) ;
     border-radius: .3em !important;
     height: 100%;
     width: 100%;
-    overflow: hidden;
+    overflow: hidden !important;
     padding: 0 !important;
     max-height: 85vh !important;
     max-width: 100vw !important;
     transition: .3s;
+}
+video :fullscreen{
+    transform: rotateY(180deg) !important;
 }
 .fa{
     color: white;
@@ -33,7 +42,7 @@ video{
     background:rgba(255,255,255,0.4);
     backdrop-filter: blur(2px);
 }
-.floating_btns>div{
+.floating_btns>div ,#selfvideobtns>div{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -41,6 +50,9 @@ video{
     width: 3em;
     border-radius: 3.5em;
 }
+video::-webkit-media-controls {
+    display:none !important;
+  }
 .floating_btns>button{
     display: flex;
     justify-content: center;
@@ -53,6 +65,7 @@ video{
     position: relative;
     width: 10em;
 }
+
 #mymuted,.muted{
 
     display: none;
@@ -163,9 +176,17 @@ video{
 #join{
     display: none;
 }
+#join_room{
+    background: transparent;
+    border: 1px solid black !important;
+}
 #join_room:focus + #join{
     display: block !important;
     cursor: pointer;
+}
+#users_btn{
+    background: rgba(255,255,255,1);
+    border-radius: .3em;
 }
 #join_room:focus{
     outline: none;
@@ -230,7 +251,7 @@ body{
     transition: .3s;
 
 }
-.pin{
+.pin,.fullscreen{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -243,9 +264,16 @@ body{
     background-color: rgba(255,255,255,0.4);
     border-radius: 50%;
     cursor: pointer;
-    
+    z-index: 5;
+}
+.fullscreen{
+    left: 60%;
 }
 #canvas>div>div:hover .pin{
+    display: flex;
+    animation: fadein .2s ease-in-out forwards;
+}
+#canvas>div>div:hover .fullscreen{
     display: flex;
     animation: fadein .2s ease-in-out forwards;
 }
@@ -278,4 +306,17 @@ body{
     display: none;
     justify-content: center;
     align-items: center;
+}
+#selfvideo {
+	width: 266px;
+	height: 200px;
+	background-color: #666;
+}
+#toggle_audio_home, #toggle_video_home{
+    height: 3em;
+    width: 3em;
+    border-radius: 3.5em;
+}
+.roomborder{
+    stroke-dashoffset: 50px;
 }

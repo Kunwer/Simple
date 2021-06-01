@@ -2,21 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm,UserUpdateForm
-import pyrebase
 from django.contrib.auth.models import User
 from .models import Profile
-config={
-    "apiKey": "AIzaSyDcEdb_lBOs9m-XEP9W7zv9PIorCupBu5s",
-    "authDomain": "simple-91dd0.firebaseapp.com",
-    "databaseURL": "https://simple-91dd0-default-rtdb.firebaseio.com/",
-    "projectId": "simple-91dd0",
-    "storageBucket": "simple-91dd0.appspot.com",
-    "messagingSenderId": "260826023789",
-    "appId": "1:260826023789:web:7c82f5c42aac10a059fc64"
-}
-firebase=pyrebase.initialize_app(config)
-authe = firebase.auth()
-database=firebase.database()
 
 @login_required
 def home(request):
