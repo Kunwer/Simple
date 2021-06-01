@@ -752,13 +752,6 @@
 			}
 			
 		});
-		$(document).on('keydown',function(e){
-			if(document.getElementById('chatbox').style.display == 'grid') {
-				if(e.which == 75){
-					alert('k pressed')
-				}
-			}
-		})
 		document.getElementById('join_room').addEventListener('input',function(){
 			if(!document.getElementById('join_room').value){
 				document.getElementById('join').style.display = 'none'
@@ -772,6 +765,8 @@
 			document.getElementById('userlist').style.display = 'none'
 			document.getElementById('chat_icon').setAttribute('class','bi bi-chat-square-text-fill')
 			document.getElementById('people_icon').setAttribute('class','bi bi-people')
+			//$("#input_msg").focus();
+			document.getElementById('input_msg').focus()
 		}
 		show_people = ()=>{
 			document.getElementById('allmsgs').style.display = 'none'
@@ -837,6 +832,9 @@
 				document.getElementById('toggle_audio_home').setAttribute('class','btn-outline-success btn');
 			}
 		}
+		document.getElementById('chatbox').onclick = function(){
+			document.getElementById('input_msg').focus()
+		}
 		toggle_video_home = ()=>{
 			if (video_on){
 				video_on = false
@@ -849,9 +847,6 @@
 				selfvideo.srcObject.getVideoTracks()[0].enabled = !(selfvideo.srcObject.getVideoTracks()[0].enabled);
 			}
 		}
-		$('#myAlert').on('closed.bs.alert', function () {
-			document.getElementById('noroom').style.display = 'none'
-		})
   </script>
 
 {% endblock content %}

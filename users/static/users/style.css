@@ -27,7 +27,9 @@ video :fullscreen{
 .fa{
     color: white;
 }
-
+.fa-paper-plane{
+    color: #222 !important;
+}
 .floating_btns{
     position: fixed;
     height: 5em;
@@ -172,6 +174,7 @@ video::-webkit-media-controls {
 }
 #send{
     cursor: pointer;
+    color: #222;
 }
 #join{
     display: none;
