@@ -301,10 +301,12 @@
 						audio:true,
 					})
 					firebase.database().ref(`/wantstojoin/${join_room_id}/{{ curr_user }}/`).on('child_removed',(child)=>{
-						document.getElementById('noroom').innerHTML = `<div class="alert alert-danger alert-dismissible fade show waiting" role="alert">
-							The Host Denied!
-							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-						</div>`
+						setTimeout(()=>{
+							document.getElementById('noroom').innerHTML = `<div class="alert alert-danger alert-dismissible fade show waiting" role="alert">
+								The Host Denied!
+								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>`	
+						},2000)
 					})
 					firebase.database().ref(`room/${join_room_id}/`).on('child_added',(child)=>{
 						if(child.key=='{{ curr_user }}'){
