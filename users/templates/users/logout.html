@@ -1,9 +1,12 @@
 {% extends "users/base.html" %}
 {% block content %}
-    <h2>You have been logged out</h2>
-    <div class="border-top pt-3">
-        <small class="text-muted">
-            <a href="{% url 'login' %}">Log In Again</a>
-        </small>
+    <div class="col-md-8 offset-md-2 col-12">
+        <h2 class="text-secondary mt-2">You have been logged out</h2>
+        <div class="border-top border-secondary pt-3">
+            <small class="">
+                <a class="link-primary" href="{% url 'login' %}" style='text-decoration: none !important;'>Log In Again</a>
+            </small>
+        </div>
     </div>
+
 {% endblock content %}

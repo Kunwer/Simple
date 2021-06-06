@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div id='content' style="display:none"> </div>
-	<div id="noonejoined" class="h2" style="color: #999;">
+	<div id="noonejoined" class="h2" >
 		Waiting for others to join..
 	</div>
     <div class="container-fluid">
@@ -37,7 +37,9 @@
 			
 		</div>
 	</div>
-	
+
+	<div id='myModal'></div>
+
 	<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
 		<div class="offcanvas-header border-bottom">
 			<!-- <h5 id="offcanvasRightLabel">Chat</h5>
@@ -61,26 +63,30 @@
 			<div id="userlist" style="display:none"></div>
 		</div>
 	</div>
-	<div class="row main">
-		<div id="users_btn" class="col-md-5 offset-md-1 col-12 mt-5 pt-4 pb-3" style="position: relative; height: fit-content; background: rgba(255,255,255,0.9);">
-			<label for="users_btn" class="h3 text-muted p-1" style="position: absolute; top: 0;left: 0; transform: translate(29%,2%);background: rgba(255,255,255,1);">Room</label>
-			<div class="py-5 d-flex flex-md-row flex-column  align-items-center border border-dark rounded roomborder" style="justify-content: space-evenly !important;">
+	<div class="row main pt-md-5">
+		<div id="users_btn" class="col-md-5 offset-md-1 col-12 mt-5 pt-4 pb-3" >
+			<label for="users_btn" class="h3 text-muted p-1" style="position: absolute; top: 0;left: 0; transform: translate(29%,-2%); background-color: #252525;">Room</label>
+			<div class="py-5 d-flex flex-md-row flex-column  align-items-center border border-secondary rounded roomborder" style="justify-content: space-evenly !important;">
 				<div class="btn btn-outline-primary m-1 p-2" onclick="create_room()" >Create Room</div>
-				<input type="text" id='join_room' class="rounded border p-1" placeholder="Enter Room Code" autocomplete="off" />
+				<input type="text" id='join_room' class="rounded border border-secondary p-1" placeholder="Enter Room Code" autocomplete="off" />
 				<div class="font-weight-bold btn-sm btn-outline-primary m-1 px-3" id="join" onclick="join_room()" >Join</div>
+
 			</div>
 			
 		</div>
+		<div class="col-md-5 offset-md-1 col-12 mt-5 pt-4 pb-3 d-flex align-items-center justify-content-center" id='join_room_btn' style="display:none !important;">
+			<button class='btn btn-outline-secondary' id='joining' onclick="join_room();">Join Room</button>
+		</div>
 		<div class=" col-md-2 offset-md-2 col-12 mt-5 d-flex align-items-center justify-content-center flex-column" id="selfvideocontainer" style="display: none !important;">
 			<video autoplay="true" id="selfvideo"></video>
-			<div class="d-flex align-items-center mt-1 flex-fill" id="selfvideobtns" style="justify-content: space-evenly;width: 100% !important;">
-				<div class="btn btn-outline-success " id="toggle_audio_home" onclick="toggle_audio_home()">
+			<div class="d-flex align-items-center mt-2 flex-fill" id="selfvideobtns" style="justify-content: space-evenly;width: 100% !important;">
+				<div class="btn btn-outline-secondary " id="toggle_audio_home" onclick="toggle_audio_home()">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewBox="0 0 16 16">
 						<path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
 						<path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
 					  </svg>
 				</div>
-				<div class="btn btn-outline-success" id="toggle_video_home" onclick="toggle_video_home()">
+				<div class="btn btn-outline-secondary" id="toggle_video_home" onclick="toggle_video_home()">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16">
 						<path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/>
 					  </svg>
@@ -88,15 +94,14 @@
 			</div>
 		</div>
 	</div>
-		
 	<footer class="floating_btns" id="toggle_btns">
-		<div class="btn btn-outline-success " id="toggle_audio" onclick="toggle_audio()">
+		<div class="btn btn-outline-secondary " id="toggle_audio" onclick="toggle_audio()">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic" viewBox="0 0 16 16">
 				<path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
 				<path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
 			  </svg>
 		</div>
-		<div class="btn btn-outline-success" id="toggle_video" onclick="toggle_video()">
+		<div class="btn btn-outline-secondary" id="toggle_video" onclick="toggle_video()">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16">
 				<path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/>
 			  </svg>
@@ -107,16 +112,15 @@
 				<path fill-rule="evenodd" d="M11.146 1.646a.5.5 0 0 1 .708 0L13 2.793l1.146-1.147a.5.5 0 0 1 .708.708L13.707 3.5l1.147 1.146a.5.5 0 0 1-.708.708L13 4.207l-1.146 1.147a.5.5 0 0 1-.708-.708L12.293 3.5l-1.147-1.146a.5.5 0 0 1 0-.708z"/>
 			  </svg>
 		</div>
-		<div class="btn btn-outline-success" id="screen" onclick="toggle_share()">
+		<div class="btn btn-outline-secondary" id="screen" onclick="toggle_share()">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cast" viewBox="0 0 16 16">
 				<path d="m7.646 9.354-3.792 3.792a.5.5 0 0 0 .353.854h7.586a.5.5 0 0 0 .354-.854L8.354 9.354a.5.5 0 0 0-.708 0z"/>
 				<path d="M11.414 11H14.5a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-13a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h3.086l-1 1H1.5A1.5 1.5 0 0 1 0 10.5v-7A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v7a1.5 1.5 0 0 1-1.5 1.5h-2.086l-1-1z"/>
 			  </svg>
 		</div>
-		<button class="btn btn-outline-info" type="button" id="chatbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-text" viewBox="0 0 16 16">
-				<path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1H2zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12z"/>
-				<path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+		<button class="btn btn-outline-secondary" type="button" id="chatbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+				<path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
 			  </svg>
 		</button>
 	</footer>
@@ -163,6 +167,7 @@
 			peer_id:myid,
 			})
 		});
+		var modal_request = []
 		function hide_btns(){
 			document.getElementById('users_btn').style.display = 'none';
 		}
@@ -197,7 +202,8 @@
 			document.getElementById('copy').style.display = 'block'
 			document.body.removeChild(el);
 			firebase.database().ref(`wantstojoin/${new_room_number}/`).on('child_added',(child)=>{
-				var accept = confirm(`${child.key} wants to join`);
+				/*var accept = confirm(`${child.key} wants to join`);
+				
 				if(accept){
 					firebase.database().ref(`room/${new_room_number}/${child.key}`).set({
 						video:true,
@@ -206,14 +212,68 @@
 					firebase.database().ref(`users/${child.key}/room/`).set({room:new_room_number,})
 					firebase.database().ref(`wantstojoin/${new_room_number}/${child.key}`).remove()
 				}else{
-					firebase.database().ref(`wantstojoin/${new_room_number}/${child.key}`).remove()
+					
+				}*/
+				var conmodal = document.getElementById('myModal')
+				let modal = `<!-- Button trigger modal -->
+										<button type="button" class="btn btn-primary" id="modal_btn" data-bs-toggle="modal" data-bs-target="#exampleModal" style='display:none;'>
+										Launch demo modal
+										</button>
+
+										<!-- Modal -->
+										<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+										<div class="modal-dialog">
+											<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title" id="exampleModalLabel">Join Request</h5>
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+											</div>
+											<div class="modal-body">
+												<p>${child.key} Wants To Join!</p>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick='modal_reject("${child.key}","${new_room_number}")'>Deny</button>
+												<button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick='modal_accept("${child.key}","${new_room_number}")'>Accept</button>
+											</div>
+											</div>
+										</div>
+										</div>`
+				if(conmodal.childNodes.length == 0){
+					conmodal.innerHTML += modal
+					document.getElementById(`modal_btn`).click()
+				}else{
+					modal_request.push(modal);
 				}
+				
+				modal_accept = (name,room_no)=>{
+					firebase.database().ref(`room/${room_no}/${name}`).set({
+						video:true,
+						audio:true,
+					})
+					firebase.database().ref(`users/${name}/room/`).set({room:room_no,})
+					firebase.database().ref(`wantstojoin/${room_no}/${name}`).remove()
+					document.getElementById('myModal').innerHTML = ''
+					if(modal_request.length>0){
+						conmodal.innerHTML = modal_request[0]
+						modal_request.splice(0,1)
+						document.getElementById(`modal_btn`).click()
+
+					}
+				}
+
+				modal_reject = (name,room_no)=>{
+					firebase.database().ref(`wantstojoin/${room_no}/${name}`).remove()
+					document.getElementById('myModal').innerHTML = ''
+				}						
 			})
 			window.history.replaceState('room', 'Title', `/room/${new_room_number}`);
 		}
 		
 		function join_room(){
 			var join_room_id = document.getElementById('join_room').value;
+			document.getElementById('joining').innerHTML = `<div class="spinner-border spinner-border-sm text-secondary" role="status">
+																<span class="sr-only">Loading...</span>
+															</div> Joining`
 			if(join_room_id.includes('room')){
 				let url = join_room_id.split('/')
 				join_room_id = url[url.length - 1]
@@ -229,45 +289,68 @@
 					return
 				}else{
 					hide_btns();
-					document.getElementById('selfvideocontainer').remove()
+					document.getElementById('noroom').style.display = 'block'
+					document.getElementById('noroom').innerHTML = `<div class="alert alert-light alert-dismissible fade show waiting" role="alert">
+						Waiting For The Host To Let You In!!
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>`
+					
+					document.getElementById('my_room').innerText = join_room_id;
+					firebase.database().ref(`/wantstojoin/${join_room_id}/{{ curr_user }}/`).set({
+						video:true,
+						audio:true,
+					})
+					firebase.database().ref(`/wantstojoin/${join_room_id}/{{ curr_user }}/`).on('child_removed',(child)=>{
+						document.getElementById('noroom').innerHTML = `<div class="alert alert-danger alert-dismissible fade show waiting" role="alert">
+							The Host Denied!
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+						</div>`
+					})
+					firebase.database().ref(`room/${join_room_id}/`).on('child_added',(child)=>{
+						if(child.key=='{{ curr_user }}'){
+							firebase.database().ref(`/room/${join_room_id}/`).once('value',(childsnapshot)=>{
+								childsnapshot.forEach((element)=>{
+									if(element.key!='{{ curr_user }}'){
+										firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
+											connect(getting_members_id.val().peer_id,element.key);
+										})
+									}
+								})
+							})
+							firebase.database().ref(`/room/${join_room_id}/`).on('child_changed',(member_stream_properties)=>{
+								if(member_stream_properties.key != '{{ curr_user }}'){
+									if(member_stream_properties.val().audio==false ){
+										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
+									}else if(member_stream_properties.val().audio==true ){
+										document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
+									}
+								}
+							})
+						}
+						
+					})
+					window.history.replaceState('room', 'Title', `/room/${join_room_id}`);
 				}
 			})
-			document.getElementById('my_room').innerText = join_room_id;
 			//firebase.database().ref(`users/{{ curr_user }}/room/`).set({room:join_room_id,})
 			//firebase.database().ref('room_number/').update({room_number:join_room_id,});
-			firebase.database().ref(`/wantstojoin/${join_room_id}/{{ curr_user }}/`).set({
-				video:true,
-				audio:true,
-			})
-			firebase.database().ref(`room/${join_room_id}/`).on('child_added',(child)=>{
-				if(child.key=='{{ curr_user }}'){
-					firebase.database().ref(`/room/${join_room_id}/`).once('value',(childsnapshot)=>{
-						childsnapshot.forEach((element)=>{
-							if(element.key!='{{ curr_user }}'){
-								firebase.database().ref(`users/${element.key}/peer_id`).once('value',(getting_members_id)=>{
-									connect(getting_members_id.val().peer_id,element.key);
-								})
-							}
-						})
-					})
-					firebase.database().ref(`/room/${join_room_id}/`).on('child_changed',(member_stream_properties)=>{
-						if(member_stream_properties.key != '{{ curr_user }}'){
-							if(member_stream_properties.val().audio==false ){
-								document.getElementById(`${member_stream_properties.key}muted`).style.display = 'flex';
-							}else if(member_stream_properties.val().audio==true ){
-								document.getElementById(`${member_stream_properties.key}muted`).style.display = 'none';
-							}
-						}
-					})
-				}
-				
-			})
+			
 			
 		}
 		sendvideocall = (anotherpeersid,uname)=>{
 			getUserMedia({video: true, audio: true}, function(stream) {
 				mystream.push(stream);
 				var call = peer.call(anotherpeersid, stream, { metadata: { userName: '{{ curr_user }}' } });
+				let element = document.getElementsByClassName('waiting')[0]
+				if(typeof(element) != 'undefined' && element != null){
+					element.remove()
+				}
+				let selfvideocont = document.getElementById('selfvideocontainer')
+				if(typeof(selfvideocont) != 'undefined' && selfvideocont != null){
+					selfvideocont.remove()
+					document.getElementById('join_room_btn').remove()
+				}
+				
 				call.once('stream', function(remoteStream) {
 					if(!room_member_list.includes(remoteStream.id)){
 						room_member_list.push(remoteStream.id)
@@ -326,7 +409,6 @@
 			});
 		}
 
-
 		function connect(anotherpeersid,uname){
 			var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 			var conn = peer.connect(anotherpeersid);
@@ -355,10 +437,10 @@
 						div.setAttribute('id',`${data_received}div`)
 						div.setAttribute('class','col rounded')
 						if(data_received=='{{ curr_user }}_Screen'){
-							div.setAttribute('class','border border-dark d-flex justify-content-center align-items-center flex-column rounded m-1 py-2')
+							div.setAttribute('class','border border-secondary d-flex justify-content-center align-items-center flex-column rounded m-1 py-2')
 							var presenting = document.createElement('div');
 							presenting.setAttribute('id',`${data_received}`)
-							presenting.setAttribute('class','col presenting rounded m-1 flex-fill text-center my-5')
+							presenting.setAttribute('class','col presenting rounded m-1 flex-fill text-center text-secondary my-5')
 							presenting.innerText = 'You Are Presenting'
 							div.append(presenting)
 							let stop_share = document.createElement('div')
@@ -547,7 +629,7 @@
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
 				});
 			}else{
-				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-success btn');
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-secondary btn');
 				document.getElementById('mymuted').style.display = 'none';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:true})
@@ -568,7 +650,7 @@
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:false})
 				});
 			}else{
-				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-success btn');
+				document.getElementById('toggle_audio').setAttribute('class','btn btn-outline-secondary btn');
 				document.getElementById('mymuted').style.display = 'none';
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 					firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({audio:true})
@@ -589,7 +671,7 @@
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
 					});
 				}else{
-					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-success btn');
+					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-secondary btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
 					});
@@ -609,7 +691,7 @@
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:false})
 					});
 				}else{
-					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-success btn');
+					document.getElementById('toggle_video').setAttribute('class','btn btn-outline-secondary btn');
 					firebase.database().ref('users/{{ curr_user }}/room').get().then((child)=>{
 						firebase.database().ref(`room/${child.val().room}/{{ curr_user }}`).update({video:true})
 					});
@@ -639,17 +721,16 @@
 				firebase.database().ref('users/{{ curr_user }}/room').get().then((snapshot)=>{
 					firebase.database().ref(`room/${snapshot.val().room}/`).on("value",(childsnapshot)=>{
 						childsnapshot.forEach((element)=>{
-							console.log('val',element.val(),'key',element.key)
 							if(element.key!='{{ curr_user }}_Screen'){
 								firebase.database().ref(`users/${element.key}/peer_id`).get().then((getting_members_id)=>{
 									myScreen.then(function(stream){
 										//document.getElementById('myscreenshare').srcObject = stream
-										document.getElementById('screen').setAttribute('class','btn btn-danger btn');
+										
 										var call = peer.call(getting_members_id.val().peer_id, stream,{ metadata: { userName: '{{ curr_user }}_Screen' } });
 										stream.getVideoTracks()[0].onended = function () {
 											firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}_Screen`).remove().then((child)=>{})
 											firebase.database().ref('users/{{ curr_user }}_Screen').remove().then((childsnap)=>{})
-											document.getElementById('screen').setAttribute('class','btn btn-outline-success btn');
+											document.getElementById('screen').setAttribute('class','btn btn-outline-secondary');
 											t_share = false
 										};
 									})
@@ -671,14 +752,15 @@
 						firebase.database().ref(`room/${snapshot.val().room}/{{ curr_user }}_Screen`).remove().then((child)=>{})
 						firebase.database().ref('users/{{ curr_user }}_Screen').remove().then((childsnap)=>{})
 					})
-					document.getElementById('screen').setAttribute('class','btn btn-outline-success btn');
+					document.getElementById('screen').setAttribute('class','btn btn-outline-secondary');
 					})		
 				t_share = false
 			}
 			var t_share = false
 			toggle_share=()=>{
 				if(!t_share){
-					Screen_Share()				
+					Screen_Share()		
+					document.getElementById('screen').setAttribute('class','btn btn-danger');		
 				}else{
 					stop_share()		
 				}
@@ -726,7 +808,9 @@
 				firebase.database().ref(`room/${url_parts[url_parts.length-1]}`).get().then((child)=>{
 					if(child.val()!=null){
 						document.getElementById('join_room').value = url_parts[url_parts.length-1]
-						join_room()
+						document.getElementById('selfvideocontainer').style.display='block'
+						document.getElementById('join_room_btn').style.display = 'flex'
+						
 					}else{
 						window.location = '{% url "home" %}'
 					}
@@ -812,7 +896,6 @@
 		}
 		function toggleFullscreen(elem_id) {
 			let elem = document.getElementById(elem_id)
-			console.log(elem)
 			if (!document.fullscreenElement) {
 				elem.requestFullscreen().catch(err => {
 				alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
@@ -829,7 +912,7 @@
 			}
 			else{
 				audio_on = true
-				document.getElementById('toggle_audio_home').setAttribute('class','btn-outline-success btn');
+				document.getElementById('toggle_audio_home').setAttribute('class','btn-outline-secondary btn');
 			}
 		}
 		document.getElementById('chatbox').onclick = function(){
@@ -843,7 +926,7 @@
 			}
 			else{
 				video_on = true
-				document.getElementById('toggle_video_home').setAttribute('class','btn-outline-success btn');
+				document.getElementById('toggle_video_home').setAttribute('class','btn-outline-secondary btn');
 				selfvideo.srcObject.getVideoTracks()[0].enabled = !(selfvideo.srcObject.getVideoTracks()[0].enabled);
 			}
 		}

@@ -1,10 +1,10 @@
 nav{
-    background-color: #202124;
+    background-color: rgba(0,0,0,0.7);
 }
 body{
-    /*background:url(http://drive.google.com/uc?export=view&id=12aHCrq3kOeJdqgLnmFV6jFm_GTQ6eawL) no-repeat center center fixed;
-    background-size: cover;
-    backdrop-filter: blur(1px);*/
+    /*background:url(http://drive.google.com/uc?export=view&id=1QuFXt5jma39If8q3N0MVghd4wGLN1Cd4) no-repeat center center fixed;
+    background-size: cover;*/
+    background-color: #252525;
     min-height: 100vh;
 }
 #peer_id_updateform{
@@ -30,6 +30,11 @@ video :fullscreen{
 .fa-paper-plane{
     color: #222 !important;
 }
+#users_btn{
+    position: relative; 
+    height: fit-content; 
+    background-color: transparent !important;
+}
 .floating_btns{
     position: fixed;
     height: 5em;
@@ -41,7 +46,7 @@ video :fullscreen{
     transform: translate(-50%,-100%);
     align-items: center;
     flex-direction: row;
-    background:rgba(255,255,255,0.4);
+    background:rgba(0,0,0,0.5);
     backdrop-filter: blur(2px);
 }
 .floating_btns>div ,#selfvideobtns>div{
@@ -51,6 +56,16 @@ video :fullscreen{
     height: 3em;
     width: 3em;
     border-radius: 3.5em;
+  
+}
+
+.btn-outline-primary{
+    border-color: #7f5af0 !important;
+    color: #94a1b2;
+}
+.btn-outline-primary:hover{
+    background-color: #7f5af0 !important;
+    color: #fffffe !important;
 }
 video::-webkit-media-controls {
     display:none !important;
@@ -181,7 +196,7 @@ video::-webkit-media-controls {
 }
 #join_room{
     background: transparent;
-    border: 1px solid black !important;
+    color: #ddd;
 }
 #join_room:focus + #join{
     display: block !important;
@@ -200,7 +215,7 @@ video::-webkit-media-controls {
 .custom-toggler .navbar-toggler-icon {
 background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
 }
-.nav-item:focus ,.custom-toggler:focus{
+.nav-item:focus ,.custom-toggler:focus,#chatbox:focus{
     outline: none !important;
     box-shadow: none !important;
 }
@@ -211,9 +226,6 @@ background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32
     max-height: 60vh;
     position: relative;
     box-sizing: border-box;
-}
-body{
-    overflow: hidden;
 }
 .myvideo_container{
     position: fixed;
@@ -302,13 +314,14 @@ body{
     width: fit-content;
 }
 #noonejoined{
-    position: absolute;
+    position: absolute !important;
     top: 40vh;
     left: 50vw;
     transform: translate(-50%,-50%);
     display: none;
     justify-content: center;
     align-items: center;
+    color: #999;
 }
 #selfvideo {
 	width: 266px;
@@ -322,4 +335,7 @@ body{
 }
 .roomborder{
     stroke-dashoffset: 50px;
+}
+a{
+    text-decoration: none !important;
 }
