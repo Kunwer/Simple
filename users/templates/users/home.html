@@ -666,7 +666,15 @@
 			}
 			}
 		}
-		
+		function valid_url(str) {
+			var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+				'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+				'((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+				'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+				'(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+				'(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+			return !!pattern.test(str);
+		}
 		function toggle_videoon(){
 			video_on = true
 			for(stream1 of mystream){
@@ -800,7 +808,17 @@
 				current = new Date()
 				date = current.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 				span.innerHTML=`<span> ${uname}</span><span>${date}</span>`;
-				msg.innerText= childsnapshot.val()[uname];
+				if(valid_url(childsnapshot.val()[uname])){
+					if(!childsnapshot.val()[uname].includes('http')){
+						msg.innerHTML = `<a href='http://${childsnapshot.val()[uname]}' target='_blank'>${childsnapshot.val()[uname]}</a>`
+					}else{
+						msg.innerHTML = `<a href='${childsnapshot.val()[uname]}' target='_blank'>${childsnapshot.val()[uname]}</a>`
+					}
+					
+				}else{
+					msg.innerText= childsnapshot.val()[uname];
+				}
+				
 				msg.append(span);
 				chat.appendChild(msg);
 				let vScrollBar = document.getElementById('offcanvas-body');
